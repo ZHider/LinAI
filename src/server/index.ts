@@ -5,7 +5,8 @@ import wanApi from "./wan";
 
 const app = new Hono();
 
-app.route("/api/wan", wanApi);
+const routes = app.route("/api/wan", wanApi);
+export type AppType = typeof routes;
 
 if (process.env.NODE_ENV !== "development") {
   // Production serving of static files

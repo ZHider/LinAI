@@ -1,4 +1,21 @@
 import { useEffect, useState } from "react";
+import { hc } from "hono/client";
+import {
+  Card,
+  Typography,
+  Alert,
+  Button,
+  Switch,
+  Space,
+  Spin,
+  message,
+} from "antd";
+import { RocketOutlined } from "@ant-design/icons";
+import type { AppType } from "../../server/index";
+
+const client = hc<AppType>("/");
+
+const { Title, Text } = Typography;
 
 export function WanSection() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -8,13 +25,14 @@ export function WanSection() {
 
   const fetchStatus = async () => {
     try {
-      const res = await fetch("/api/wan/status");
+      const res = await client.api.wan.status.$get();
       const data = await res.json();
       setIsLoggedIn(data.isLoggedIn);
       setAutoSubmit(data.autoSubmit);
       setErrorMsg(data.errorMsg);
     } catch (e) {
       console.error(e);
+      message.error("获取状态失败");
     } finally {
       setLoading(false);
     }
@@ -29,80 +47,108 @@ export function WanSection() {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      await fetch("/api/wan/login", { method: "POST" });
+      const res = await client.api.wan.login.$post();
+      const data = await res.json();
+      if (!data.success) {
+        message.error(data.error || "登录失败");
+      } else {
+        message.success("登录成功");
+      }
       await fetchStatus();
     } catch (e) {
       console.error(e);
+      message.error("请求登录失败");
     }
     setLoading(false);
   };
 
-  const toggleAutoSubmit = async () => {
-    const nextState = !autoSubmit;
-    setAutoSubmit(nextState);
+  const toggleAutoSubmit = async (checked: boolean) => {
+    setAutoSubmit(checked);
     try {
-      await fetch("/api/wan/auto-submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ enable: nextState }),
+      const res = await client.api.wan["auto-submit"].$post({
+        json: { enable: checked },
       });
+      const data = await res.json();
+      if (!data.success) {
+        message.error("切换自动提交失败");
+        setAutoSubmit(!checked);
+      }
       await fetchStatus();
     } catch (e) {
       console.error(e);
-      setAutoSubmit(!nextState);
+      message.error("请求失败");
+      setAutoSubmit(!checked);
     }
   };
 
   if (loading && !isLoggedIn) {
-    return <div className="p-4">加载中...</div>;
+    return (
+      <Card
+        bordered={false}
+        className="shadow-sm rounded-xl border border-gray-100 p-6"
+      >
+        <div className="flex justify-center items-center py-8">
+          <Spin size="large" tip="加载中..." />
+        </div>
+      </Card>
+    );
   }
 
   return (
-    <section className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-      <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-        <span>🚀</span> 快捷入口 - Wan 视频下载
-      </h2>
-
+    <Card
+      bordered={false}
+      className="shadow-sm rounded-xl border border-gray-100"
+      title={
+        <Space>
+          <RocketOutlined className="text-blue-500" />
+          <span className="text-xl font-bold">快捷入口 - Wan 视频下载</span>
+        </Space>
+      }
+    >
       <div className="space-y-4">
         {errorMsg && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-lg text-sm">
-            <span className="font-semibold">错误信息：</span> {errorMsg}
-          </div>
+          <Alert
+            message="错误信息"
+            description={errorMsg}
+            type="error"
+            showIcon
+            className="rounded-lg"
+          />
         )}
 
         {!isLoggedIn ? (
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <span className="text-gray-600">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <Text type="secondary" className="text-base">
               您尚未登录，请先登录以继续操作。
-            </span>
-            <button
+            </Text>
+            <Button
+              type="primary"
               onClick={handleLogin}
-              disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors disabled:opacity-50"
+              loading={loading}
+              size="large"
+              className="px-6 rounded-lg font-medium"
             >
-              {loading ? "登录中..." : "登录"}
-            </button>
+              登录
+            </Button>
           </div>
         ) : (
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
             <div className="flex flex-col">
-              <span className="font-medium text-gray-900">自动提交任务</span>
-              <span className="text-sm text-gray-500">
+              <Text strong className="text-base text-gray-900">
+                自动提交任务
+              </Text>
+              <Text type="secondary" className="text-sm">
                 开启后将自动轮询并提交新的下载任务
-              </span>
+              </Text>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                className="sr-only peer"
-                checked={autoSubmit}
-                onChange={toggleAutoSubmit}
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
+            <Switch
+              checked={autoSubmit}
+              onChange={toggleAutoSubmit}
+              className="bg-gray-300"
+            />
           </div>
         )}
       </div>
-    </section>
+    </Card>
   );
 }
