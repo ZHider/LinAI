@@ -1,22 +1,7 @@
 import { useState, useEffect } from 'react'
 import { hc } from 'hono/client'
-import {
-  Modal,
-  Button,
-  message,
-  Divider,
-  List,
-  Typography,
-  Space,
-  Popconfirm,
-  Card
-} from 'antd'
-import {
-  CodeOutlined,
-  DeleteOutlined,
-  CopyOutlined,
-  HistoryOutlined
-} from '@ant-design/icons'
+import { Modal, Button, message, Divider, Typography, Card, Input } from 'antd'
+import { CodeOutlined, CopyOutlined, MailOutlined } from '@ant-design/icons'
 import type { AppType } from '../../server/index'
 import { LogViewer } from './LogViewer'
 
@@ -33,29 +18,111 @@ interface TraeAccount {
 export function TraeSection() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [history, setHistory] = useState<TraeAccount[]>([])
   const [newAccount, setNewAccount] = useState<TraeAccount | null>(null)
+  const [baseEmail, setBaseEmail] = useState('')
+  const [inputEmail, setInputEmail] = useState('')
+
+  // Google 登录状态
+  const [isGoogleLoggedIn, setIsGoogleLoggedIn] = useState(false)
+  const [googleAccountInfo, setGoogleAccountInfo] = useState<{
+    email?: string
+  } | null>(null)
+  const [checkingLogin, setCheckingLogin] = useState(true)
+  const [loggingIn, setLoggingIn] = useState(false)
+
+  useEffect(() => {
+    checkGoogleLoginStatus()
+  }, [])
 
   useEffect(() => {
     if (isModalOpen) {
-      fetchHistory()
+      fetchBaseEmail()
     }
   }, [isModalOpen])
 
-  const fetchHistory = async () => {
+  const checkGoogleLoginStatus = async () => {
     try {
-      const res = await client.api.trae.history.$get()
+      setCheckingLogin(true)
+      const res = await client.api.trae.auth.status.$get()
       const data = await res.json()
-      if (data.success) {
-        setHistory(data.data as TraeAccount[])
+      setIsGoogleLoggedIn(data.isLoggedIn)
+      if (data.isLoggedIn && data.accountInfo) {
+        setGoogleAccountInfo(data.accountInfo)
       }
     } catch (e) {
       console.error(e)
-      message.error('获取历史记录失败')
+      message.error('获取 Google 登录状态失败')
+    } finally {
+      setCheckingLogin(false)
     }
   }
 
+  const handleGoogleLogin = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    try {
+      setLoggingIn(true)
+      const res = await client.api.trae.auth.login.$post()
+      const data = await res.json()
+      if (data.success) {
+        message.success('登录成功')
+        await checkGoogleLoginStatus()
+      } else {
+        message.error(data.error || '登录失败')
+      }
+    } catch (e) {
+      console.error(e)
+      message.error('请求登录失败')
+    } finally {
+      setLoggingIn(false)
+    }
+  }
+
+  const fetchBaseEmail = async () => {
+    try {
+      const res = await client.api.trae['base-email'].$get()
+      const data = await res.json()
+      if (data.success) {
+        setBaseEmail(data.data)
+        setInputEmail(data.data)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  const handleSaveBaseEmail = async () => {
+    try {
+      const res = await client.api.trae['base-email'].$post({
+        json: { email: inputEmail }
+      })
+      const data = await res.json()
+      if (data.success) {
+        message.success('基础邮箱保存成功')
+        setBaseEmail(inputEmail)
+      } else {
+        message.error('保存失败')
+      }
+    } catch (e) {
+      console.error(e)
+      message.error('保存失败')
+    }
+  }
+
+  const getAliases = () => {
+    if (!baseEmail || !baseEmail.includes('@')) return []
+    const [name, domain] = baseEmail.split('@')
+    return [
+      `${name}+trae01@${domain}`,
+      `${name}+trae02@${domain}`,
+      `${name}+trae03@${domain}`
+    ]
+  }
+
   const showModal = () => {
+    if (!isGoogleLoggedIn) {
+      message.warning('请先登录 Google 账号')
+      return
+    }
     setIsModalOpen(true)
   }
 
@@ -64,11 +131,13 @@ export function TraeSection() {
     setNewAccount(null)
   }
 
-  const handleApplyEmail = async () => {
+  const handleApplyEmail = async (email: string) => {
     setLoading(true)
     setNewAccount(null)
     try {
-      const res = await client.api.trae['apply-email'].$post()
+      const res = await client.api.trae['apply-email'].$post({
+        json: { email }
+      })
       const data = await res.json()
       if (!data.success) {
         message.error('error' in data ? data.error : '申请失败')
@@ -76,7 +145,6 @@ export function TraeSection() {
         message.success('成功触发 Trae 功能')
         if ('data' in data) {
           setNewAccount(data.data as TraeAccount)
-          fetchHistory()
         }
       }
     } catch (e) {
@@ -84,22 +152,6 @@ export function TraeSection() {
       message.error('请求申请失败')
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleDelete = async (id: string) => {
-    try {
-      const res = await client.api.trae.history[':id'].$delete({
-        param: { id }
-      })
-      const data = await res.json()
-      if (data.success) {
-        message.success('删除成功')
-        fetchHistory()
-      }
-    } catch (e) {
-      console.error(e)
-      message.error('删除失败')
     }
   }
 
@@ -123,12 +175,52 @@ export function TraeSection() {
 
         <div className="p-5 flex-1 flex flex-col gap-4">
           <div className="flex flex-col items-center justify-center py-6 text-center gap-4 bg-slate-50 rounded-xl border border-slate-100 flex-1">
-            <div>
-              <p className="text-slate-600 font-medium mb-1">
-                Trae 账号自动化申请
-              </p>
-              <p className="text-slate-400 text-sm">点击探索更多</p>
-            </div>
+            {checkingLogin ? (
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-slate-400 text-sm">检查登录状态...</p>
+              </div>
+            ) : !isGoogleLoggedIn ? (
+              <>
+                <div className="w-12 h-12 bg-slate-200/50 rounded-full flex items-center justify-center text-slate-400">
+                  <MailOutlined className="text-xl" />
+                </div>
+                <div>
+                  <p className="text-slate-600 font-medium mb-1">
+                    未登录 Google
+                  </p>
+                  <p className="text-slate-400 text-sm">
+                    点击进行浏览器环境授权登录
+                  </p>
+                </div>
+                <Button
+                  type="primary"
+                  onClick={handleGoogleLogin}
+                  loading={loggingIn}
+                  className="mt-2 bg-indigo-600 hover:bg-indigo-700 shadow-sm px-8"
+                  shape="round"
+                >
+                  去登录
+                </Button>
+              </>
+            ) : (
+              <>
+                <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600">
+                  <CodeOutlined className="text-xl" />
+                </div>
+                <div>
+                  <p className="text-slate-600 font-medium mb-1">
+                    Trae 账号自动化申请
+                  </p>
+                  <p className="text-slate-400 text-sm">点击探索更多</p>
+                </div>
+                {googleAccountInfo && googleAccountInfo.email && (
+                  <div className="mt-2 px-3 py-1 bg-green-50 text-green-700 text-xs rounded-full border border-green-100">
+                    已登录: {googleAccountInfo.email}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -143,24 +235,69 @@ export function TraeSection() {
       >
         <div className="flex flex-col gap-6 py-4">
           <div className="flex flex-col items-center justify-center gap-4 bg-indigo-50/30 p-8 rounded-2xl border border-indigo-100">
-            <div className="text-center">
+            <div className="text-center w-full max-w-md">
               <h4 className="text-lg font-bold text-slate-800 mb-2">
                 申请新账号
               </h4>
-              <p className="text-slate-500 max-w-md">
-                自动使用临时邮箱注册 Trae
-                账号，过程全自动化，成功后将显示在下方。
+              <p className="text-slate-500 mb-4">
+                使用 Gmail 别名自动注册 Trae 账号，需在系统浏览器已登录对应
+                Gmail。
               </p>
+
+              <div className="flex gap-2 mb-6">
+                <Input
+                  placeholder="请输入您的 Gmail 基础邮箱"
+                  value={inputEmail}
+                  onChange={(e) => setInputEmail(e.target.value)}
+                  prefix={<MailOutlined className="text-slate-400" />}
+                />
+                <Button type="primary" onClick={handleSaveBaseEmail}>
+                  保存
+                </Button>
+              </div>
+
+              {baseEmail && baseEmail.includes('@') && (
+                <div className="flex flex-col gap-3">
+                  <Text type="secondary" className="text-left">
+                    选择以下别名开始申请：
+                  </Text>
+                  {getAliases().map((alias) => (
+                    <Button
+                      key={alias}
+                      onClick={() => handleApplyEmail(alias)}
+                      loading={loading}
+                      className="w-full text-left flex justify-between items-center h-10"
+                    >
+                      <span>{alias}</span>
+                      <span className="text-indigo-500 text-xs bg-indigo-50 px-2 py-1 rounded">
+                        使用此别名
+                      </span>
+                    </Button>
+                  ))}
+
+                  <Divider className="my-2" />
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="或输入自定义别名邮箱"
+                      id="customAlias"
+                    />
+                    <Button
+                      onClick={() => {
+                        const val = (
+                          document.getElementById(
+                            'customAlias'
+                          ) as HTMLInputElement
+                        )?.value
+                        if (val) handleApplyEmail(val)
+                      }}
+                      loading={loading}
+                    >
+                      申请
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
-            <Button
-              type="primary"
-              onClick={handleApplyEmail}
-              loading={loading}
-              className="bg-indigo-600 hover:bg-indigo-700 shadow-md px-10 h-12 text-lg"
-              shape="round"
-            >
-              立即申请 Trae 账号
-            </Button>
 
             {newAccount && (
               <Card className="w-full max-w-md mt-4 border-green-200 bg-green-50/20">
@@ -197,86 +334,13 @@ export function TraeSection() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-2 text-slate-700 font-bold">
-                <HistoryOutlined />
-                <span>历史账号记录</span>
-              </div>
-              <div className="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
-                <List
-                  className="max-h-[400px] overflow-y-auto"
-                  dataSource={history}
-                  locale={{ emptyText: '暂无历史记录' }}
-                  renderItem={(item) => (
-                    <List.Item
-                      key={item.id}
-                      className="px-4 hover:bg-white transition-colors border-b border-slate-100"
-                      actions={[
-                        <Popconfirm
-                          title="确定删除此账号记录吗？"
-                          onConfirm={() => handleDelete(item.id)}
-                          okText="确定"
-                          cancelText="取消"
-                        >
-                          <Button
-                            type="text"
-                            danger
-                            icon={<DeleteOutlined />}
-                          />
-                        </Popconfirm>
-                      ]}
-                    >
-                      <List.Item.Meta
-                        title={
-                          <Space>
-                            <Text strong className="text-slate-700">
-                              {item.email}
-                            </Text>
-                            <Button
-                              type="text"
-                              size="small"
-                              icon={<CopyOutlined className="text-xs" />}
-                              onClick={() => copyToClipboard(item.email)}
-                            />
-                          </Space>
-                        }
-                        description={
-                          <div className="flex flex-col gap-1">
-                            <Space>
-                              <Text type="secondary">
-                                密码: {item.password}
-                              </Text>
-                              <Button
-                                type="text"
-                                size="small"
-                                icon={
-                                  <CopyOutlined className="text-xs text-slate-400" />
-                                }
-                                onClick={() => copyToClipboard(item.password)}
-                              />
-                            </Space>
-                            <Text type="secondary" style={{ fontSize: '12px' }}>
-                              创建时间:{' '}
-                              {new Date(item.createdAt).toLocaleString()}
-                            </Text>
-                          </div>
-                        }
-                      />
-                    </List.Item>
-                  )}
-                />
-              </div>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2 text-slate-700 font-bold">
+              <CodeOutlined />
+              <span>自动化日志</span>
             </div>
-
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-2 text-slate-700 font-bold">
-                <CodeOutlined />
-                <span>自动化日志</span>
-              </div>
-              <div className="h-[400px] rounded-xl border border-slate-200 overflow-hidden bg-slate-900">
-                <LogViewer moduleId="trae" title="" />
-              </div>
+            <div className="h-[400px] rounded-xl border border-slate-200 overflow-hidden bg-slate-900">
+              <LogViewer moduleId="trae" title="" />
             </div>
           </div>
         </div>

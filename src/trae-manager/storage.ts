@@ -5,35 +5,30 @@ import { config } from '../wan-downloader/config';
 export interface TraeAccount {
   id: string;
   email: string;
-  password: string;
   createdAt: string;
 }
 
-const STORAGE_FILE = path.join(config.LOG_DIR, 'trae_accounts.json');
+export interface TraeConfig {
+  baseEmail: string;
+}
+
+const CONFIG_FILE = path.join(config.LOG_DIR, 'trae_config.json');
 
 export class TraeStorage {
-  static async getAccounts(): Promise<TraeAccount[]> {
+  static async getBaseEmail(): Promise<string> {
     try {
-      if (!(await fs.pathExists(STORAGE_FILE))) {
-        return [];
+      if (!(await fs.pathExists(CONFIG_FILE))) {
+        return '';
       }
-      return await fs.readJson(STORAGE_FILE);
+      const cfg = await fs.readJson(CONFIG_FILE);
+      return cfg.baseEmail || '';
     } catch (e) {
-      console.error('读取 Trae 账号存储失败:', e);
-      return [];
+      return '';
     }
   }
 
-  static async saveAccount(account: TraeAccount) {
-    const accounts = await this.getAccounts();
-    accounts.push(account);
-    await fs.ensureDir(path.dirname(STORAGE_FILE));
-    await fs.writeJson(STORAGE_FILE, accounts, { spaces: 2 });
-  }
-
-  static async deleteAccount(id: string) {
-    const accounts = await this.getAccounts();
-    const updatedAccounts = accounts.filter(a => a.id !== id);
-    await fs.writeJson(STORAGE_FILE, updatedAccounts, { spaces: 2 });
+  static async setBaseEmail(baseEmail: string) {
+    await fs.ensureDir(path.dirname(CONFIG_FILE));
+    await fs.writeJson(CONFIG_FILE, { baseEmail }, { spaces: 2 });
   }
 }

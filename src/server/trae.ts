@@ -1,36 +1,57 @@
-import { Hono } from "hono";
-import { TraeManager } from "../trae-manager/index";
-import { bindLogRoutes } from "./utils";
+import { Hono } from 'hono'
+import { TraeManager } from '../trae-manager/index'
+import { TraeStorage } from '../trae-manager/storage'
+import { bindLogRoutes } from './utils'
 
-const traeManager = new TraeManager();
+const traeManager = new TraeManager()
 
 const traeApi = new Hono()
-  .post("/apply-email", async (c) => {
+  .get('/auth/status', async (c) => {
     try {
-      const result = await traeManager.applyTempEmail();
-      return c.json(result);
+      const status = await traeManager.checkLoginStatus()
+      return c.json(status)
     } catch (error: any) {
-      return c.json({ success: false, error: error.message }, 500);
+      return c.json({ isLoggedIn: false, error: error.message }, 500)
     }
   })
-  .get("/history", async (c) => {
+  .post('/auth/login', async (c) => {
     try {
-      const history = await traeManager.getHistory();
-      return c.json({ success: true, data: history });
+      const result = await traeManager.loginGoogle()
+      return c.json(result)
     } catch (error: any) {
-      return c.json({ success: false, error: error.message }, 500);
+      return c.json({ success: false, error: error.message }, 500)
     }
   })
-  .delete("/history/:id", async (c) => {
+  .get('/base-email', async (c) => {
     try {
-      const id = c.req.param("id");
-      const result = await traeManager.deleteHistory(id);
-      return c.json(result);
+      const email = await TraeStorage.getBaseEmail()
+      return c.json({ success: true, data: email })
     } catch (error: any) {
-      return c.json({ success: false, error: error.message }, 500);
+      return c.json({ success: false, error: error.message }, 500)
     }
-  });
+  })
+  .post('/base-email', async (c) => {
+    try {
+      const { email } = await c.req.json()
+      await TraeStorage.setBaseEmail(email || '')
+      return c.json({ success: true })
+    } catch (error: any) {
+      return c.json({ success: false, error: error.message }, 500)
+    }
+  })
+  .post('/apply-email', async (c) => {
+    try {
+      const { email } = await c.req.json()
+      if (!email) {
+        return c.json({ success: false, error: 'Email is required' }, 400)
+      }
+      const result = await traeManager.applyEmail(email)
+      return c.json(result)
+    } catch (error: any) {
+      return c.json({ success: false, error: error.message }, 500)
+    }
+  })
 
-bindLogRoutes(traeApi, traeManager.logger);
+bindLogRoutes(traeApi, traeManager.logger)
 
-export default traeApi;
+export default traeApi
