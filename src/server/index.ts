@@ -3,12 +3,14 @@ import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import wanApi from "./wan";
 import traeApi from "./trae";
+import geminiApi from "./gemini";
 
 const app = new Hono();
 
 const routes = app
   .route("/api/wan", wanApi)
-  .route("/api/trae", traeApi);
+  .route("/api/trae", traeApi)
+  .route("/api/gemini", geminiApi);
 export type AppType = typeof routes;
 
 if (process.env.NODE_ENV !== "development") {
