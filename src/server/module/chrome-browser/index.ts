@@ -198,3 +198,6 @@ export class BrowserAuthManager {
     }
   }
 }
+
+const chromeBrowserManager = new BrowserAuthManager(new Logger('chrome-browser'))
+export default chromeBrowserManager

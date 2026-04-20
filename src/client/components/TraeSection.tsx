@@ -43,7 +43,7 @@ export function TraeSection() {
   const checkGoogleLoginStatus = async () => {
     try {
       setCheckingLogin(true)
-      const res = await client.api.trae.auth.status.$get()
+      const res = await client.api.chrome.auth.status.$get()
       const data = await res.json()
       setIsGoogleLoggedIn(data.isLoggedIn)
       if (data.isLoggedIn && data.accountInfo) {
@@ -61,7 +61,7 @@ export function TraeSection() {
     e.stopPropagation()
     try {
       setLoggingIn(true)
-      const res = await client.api.trae.auth.login.$post()
+      const res = await client.api.chrome.auth.login.$post()
       const data = await res.json()
       if (data.success) {
         message.success('登录成功')

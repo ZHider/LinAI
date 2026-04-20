@@ -6,22 +6,6 @@ import { bindLogRoutes } from './utils'
 const traeManager = new TraeManager()
 
 const traeApi = new Hono()
-  .get('/auth/status', async (c) => {
-    try {
-      const status = await traeManager.checkLoginStatus()
-      return c.json(status)
-    } catch (error: any) {
-      return c.json({ isLoggedIn: false, error: error.message }, 500)
-    }
-  })
-  .post('/auth/login', async (c) => {
-    try {
-      const result = await traeManager.loginGoogle()
-      return c.json(result)
-    } catch (error: any) {
-      return c.json({ success: false, error: error.message }, 500)
-    }
-  })
   .get('/base-email', async (c) => {
     try {
       const email = await TraeStorage.getBaseEmail()

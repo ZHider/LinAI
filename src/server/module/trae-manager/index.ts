@@ -1,23 +1,13 @@
 import { BrowserContext, Browser } from 'playwright'
 import { Logger } from '../utils/logger'
 import { v4 as uuidv4 } from 'uuid'
-import { BrowserAuthManager } from './auth'
+import chromeBrowserManager from '../chrome-browser'
 
 export class TraeManager {
   public logger: Logger
-  private authManager: BrowserAuthManager
 
   constructor() {
     this.logger = new Logger('trae')
-    this.authManager = new BrowserAuthManager(this.logger)
-  }
-
-  async loginGoogle() {
-    return await this.authManager.loginGoogle()
-  }
-
-  async checkLoginStatus() {
-    return await this.authManager.checkLoginStatus()
   }
 
   private generateRandomPassword(length: number = 12): string {
@@ -40,7 +30,7 @@ export class TraeManager {
 
       this.logger.info('启动浏览器并加载账号状态...')
       try {
-        const authData = await this.authManager.getAuthenticatedContext()
+        const authData = await chromeBrowserManager.getAuthenticatedContext()
         browser = authData.browser
         context = authData.context
       } catch (e: any) {
