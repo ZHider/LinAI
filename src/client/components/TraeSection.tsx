@@ -27,35 +27,13 @@ export function TraeSection() {
   const [googleAccountInfo, setGoogleAccountInfo] = useState<{
     email?: string
   } | null>(null)
-  const [checkingLogin, setCheckingLogin] = useState(true)
   const [loggingIn, setLoggingIn] = useState(false)
-
-  useEffect(() => {
-    checkGoogleLoginStatus()
-  }, [])
 
   useEffect(() => {
     if (isModalOpen) {
       fetchBaseEmail()
     }
   }, [isModalOpen])
-
-  const checkGoogleLoginStatus = async () => {
-    try {
-      setCheckingLogin(true)
-      const res = await client.api.chrome.auth.status.$get()
-      const data = await res.json()
-      setIsGoogleLoggedIn(data.isLoggedIn)
-      if (data.isLoggedIn && data.accountInfo) {
-        setGoogleAccountInfo(data.accountInfo)
-      }
-    } catch (e) {
-      console.error(e)
-      message.error('获取 Google 登录状态失败')
-    } finally {
-      setCheckingLogin(false)
-    }
-  }
 
   const handleGoogleLogin = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -65,7 +43,10 @@ export function TraeSection() {
       const data = await res.json()
       if (data.success) {
         message.success('登录成功')
-        await checkGoogleLoginStatus()
+        setIsGoogleLoggedIn(true)
+        if (data.email) {
+          setGoogleAccountInfo({ email: data.email as string })
+        }
       } else {
         message.error(data.error || '登录失败')
       }
@@ -175,12 +156,7 @@ export function TraeSection() {
 
         <div className="p-5 flex-1 flex flex-col gap-4">
           <div className="flex flex-col items-center justify-center py-6 text-center gap-4 bg-slate-50 rounded-xl border border-slate-100 flex-1">
-            {checkingLogin ? (
-              <div className="flex flex-col items-center gap-2">
-                <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-slate-400 text-sm">检查登录状态...</p>
-              </div>
-            ) : !isGoogleLoggedIn ? (
+            {!isGoogleLoggedIn ? (
               <>
                 <div className="w-12 h-12 bg-slate-200/50 rounded-full flex items-center justify-center text-slate-400">
                   <MailOutlined className="text-xl" />

@@ -83,7 +83,11 @@ export class BrowserAuthManager {
   /**
    * 启动浏览器让用户手动登录 Google
    */
-  async loginGoogle(): Promise<{ success: boolean; error?: string }> {
+  async loginGoogle(): Promise<{
+    success: boolean
+    error?: string
+    email?: string
+  }> {
     try {
       this.logger.info('--- 开始手动登录 Google 账号 ---')
       this.logger.info('启动独立浏览器准备登录 Google...')
@@ -101,15 +105,33 @@ export class BrowserAuthManager {
       try {
         // 等待用户登录成功后跳转到 myaccount.google.com
         await page.waitForURL('**/myaccount.google.com/**', { timeout: 0 })
-        this.logger.info('检测到登录成功！正在保存状态...')
+        this.logger.info('检测到登录成功！正在获取账号信息...')
+
+        // 尝试从页面提取邮箱信息
+        const content = await page.content()
+        const emails = content.match(
+          /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g
+        )
+
+        // 过滤掉常见的非个人邮箱
+        const validEmails = emails
+          ? [...new Set(emails)].filter(
+              (e) => !e.includes('s.whatsapp.net') && e.includes('@gmail.com')
+            )
+          : []
+
+        const email = validEmails.length > 0 ? validEmails[0] : '已登录用户'
+
+        await page.close() // 不关闭整个 browser，因为是独立进程
+        await browser.close() // 断开 CDP 连接
+
+        return { success: true, email }
       } catch (e: any) {
         this.logger.error('等待登录状态时发生异常或手动关闭', e.message)
+        await page.close()
+        await browser.close()
+        return { success: false, error: e.message }
       }
-
-      await page.close() // 不关闭整个 browser，因为是独立进程
-      await browser.close() // 断开 CDP 连接
-
-      return { success: true }
     } catch (error: any) {
       this.logger.error('登录 Google 失败:', error.message)
       return { success: false, error: error.message }
@@ -130,74 +152,9 @@ export class BrowserAuthManager {
 
     return { browser, context }
   }
-
-  /**
-   * 检查谷歌账号登录状态并获取账号信息
-   */
-  async checkLoginStatus(): Promise<{
-    isLoggedIn: boolean
-    accountInfo?: { email: string }
-  }> {
-    let browser: Browser | null = null
-    try {
-      try {
-        browser = await chromium.connectOverCDP('http://localhost:9222')
-      } catch (connectError) {
-        return {
-          isLoggedIn: false
-        }
-      }
-
-      const contexts = browser.contexts()
-      const context =
-        contexts.length > 0 ? contexts[0] : await browser.newContext()
-      const page = await context.newPage()
-
-      // 访问 myaccount.google.com 获取账号信息
-      await page.goto('https://myaccount.google.com/', {
-        waitUntil: 'domcontentloaded',
-        timeout: 15000
-      })
-
-      if (page.url().includes('signin')) {
-        await page.close()
-        return { isLoggedIn: false }
-      }
-
-      // 尝试从页面提取邮箱信息
-      const content = await page.content()
-      const emails = content.match(
-        /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g
-      )
-
-      // 过滤掉常见的非个人邮箱
-      const validEmails = emails
-        ? [...new Set(emails)].filter(
-            (e) => !e.includes('s.whatsapp.net') && e.includes('@gmail.com')
-          )
-        : []
-
-      const email = validEmails.length > 0 ? validEmails[0] : '已登录用户'
-      await page.close()
-
-      return {
-        isLoggedIn: true,
-        accountInfo: { email }
-      }
-    } catch (e: any) {
-      this.logger.error('检查登录状态失败:', e.message)
-      // 如果出现异常但存在 auth.json，保守起见可以认为已登录但获取信息失败
-      return { isLoggedIn: false }
-    } finally {
-      // 独立进程模式下，我们只需断开 CDP 连接，不调用 browser.close() 以免关闭 Chrome 实例
-      if (browser) {
-        await browser.close()
-        // 注意：playwright 中 connectOverCDP 获取的 browser 执行 close()
-        // 默认只会断开连接，不会关闭远程浏览器（除非设置了关闭行为）。
-      }
-    }
-  }
 }
 
-const chromeBrowserManager = new BrowserAuthManager(new Logger('chrome-browser'))
+const chromeBrowserManager = new BrowserAuthManager(
+  new Logger('chrome-browser')
+)
 export default chromeBrowserManager
