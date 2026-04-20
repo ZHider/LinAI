@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "vite",
+    "dev:server": "tsx watch src/server/index.ts",
     "build": "vite build",
     "start": "NODE_ENV=production tsx src/server/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -14,7 +16,6 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@hono/vite-dev-server": "^0.25.1",
     "@tailwindcss/vite": "^4.2.2",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^25.6.0",
@@ -22,6 +23,8 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "autoprefixer": "^10.5.0",
+    "concurrently": "^9.2.1",
+    "npm-run-all": "^4.1.5",
     "postcss": "^8.5.10",
     "tailwindcss": "^4.2.2",
     "ts-node": "^10.9.2",
@@ -39,6 +42,7 @@
     "hono": "^4.12.14",
     "playwright": "^1.59.1",
     "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "react-dom": "^19.2.5",
+    "uuid": "^11.0.0"
   }
 }

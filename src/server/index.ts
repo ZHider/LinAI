@@ -13,19 +13,21 @@ const routes = app
   .route("/api/gemini", geminiApi);
 export type AppType = typeof routes;
 
+const port = 3000;
+
 if (process.env.NODE_ENV !== "development") {
   // Production serving of static files
   app.use("/*", serveStatic({ root: "./dist" }));
-
-  serve(
-    {
-      fetch: app.fetch,
-      port: 3000,
-    },
-    (info) => {
-      console.log(`Server is running on http://localhost:${info.port}`);
-    },
-  );
 }
+
+serve(
+  {
+    fetch: app.fetch,
+    port: port,
+  },
+  (info) => {
+    console.log(`Server is running on http://localhost:${info.port}`);
+  },
+);
 
 export default app;
