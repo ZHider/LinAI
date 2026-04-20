@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { hc } from 'hono/client'
-import { Modal, Button, message, Divider, Typography, Card, Input } from 'antd'
+import { Modal, Button, message, Divider, Typography, Card, Table } from 'antd'
 import { CodeOutlined, CopyOutlined, MailOutlined } from '@ant-design/icons'
 import type { AppType } from '../../server/index'
 import { LogViewer } from './LogViewer'
@@ -19,19 +19,18 @@ export function TraeSection() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [newAccount, setNewAccount] = useState<TraeAccount | null>(null)
-  const [baseEmail, setBaseEmail] = useState('')
-  const [inputEmail, setInputEmail] = useState('')
+  const [aliasRecords, setAliasRecords] = useState<Record<string, string>>({})
 
   // Google 登录状态
-  const [isGoogleLoggedIn, setIsGoogleLoggedIn] = useState(false)
   const [googleAccountInfo, setGoogleAccountInfo] = useState<{
+    isLoggedIn: boolean
     email?: string
-  } | null>(null)
+  }>({ isLoggedIn: false })
   const [loggingIn, setLoggingIn] = useState(false)
 
   useEffect(() => {
     if (isModalOpen) {
-      fetchBaseEmail()
+      fetchAliasRecords()
     }
   }, [isModalOpen])
 
@@ -43,9 +42,13 @@ export function TraeSection() {
       const data = await res.json()
       if (data.success) {
         message.success('登录成功')
-        setIsGoogleLoggedIn(true)
         if (data.email) {
-          setGoogleAccountInfo({ email: data.email as string })
+          setGoogleAccountInfo({
+            isLoggedIn: true,
+            email: data.email as string
+          })
+        } else {
+          setGoogleAccountInfo({ isLoggedIn: true })
         }
       } else {
         message.error(data.error || '登录失败')
@@ -58,49 +61,32 @@ export function TraeSection() {
     }
   }
 
-  const fetchBaseEmail = async () => {
+  const fetchAliasRecords = async () => {
     try {
-      const res = await client.api.trae['base-email'].$get()
+      const res = await client.api.trae['alias-records'].$get()
       const data = await res.json()
       if (data.success) {
-        setBaseEmail(data.data)
-        setInputEmail(data.data)
+        setAliasRecords(data.data as Record<string, string>)
       }
     } catch (e) {
       console.error(e)
-    }
-  }
-
-  const handleSaveBaseEmail = async () => {
-    try {
-      const res = await client.api.trae['base-email'].$post({
-        json: { email: inputEmail }
-      })
-      const data = await res.json()
-      if (data.success) {
-        message.success('基础邮箱保存成功')
-        setBaseEmail(inputEmail)
-      } else {
-        message.error('保存失败')
-      }
-    } catch (e) {
-      console.error(e)
-      message.error('保存失败')
     }
   }
 
   const getAliases = () => {
-    if (!baseEmail || !baseEmail.includes('@')) return []
-    const [name, domain] = baseEmail.split('@')
-    return [
-      `${name}+trae01@${domain}`,
-      `${name}+trae02@${domain}`,
-      `${name}+trae03@${domain}`
-    ]
+    const email = googleAccountInfo.email
+    if (!email || !email.includes('@')) return []
+    const [name, domain] = email.split('@')
+    const aliases = []
+    for (let i = 1; i <= 20; i++) {
+      const padIndex = i.toString().padStart(2, '0')
+      aliases.push(`${name}+trae${padIndex}@${domain}`)
+    }
+    return aliases
   }
 
   const showModal = () => {
-    if (!isGoogleLoggedIn) {
+    if (!googleAccountInfo.isLoggedIn) {
       message.warning('请先登录 Google 账号')
       return
     }
@@ -127,6 +113,7 @@ export function TraeSection() {
         if ('data' in data) {
           setNewAccount(data.data as TraeAccount)
         }
+        await fetchAliasRecords()
       }
     } catch (e) {
       console.error(e)
@@ -156,7 +143,7 @@ export function TraeSection() {
 
         <div className="p-5 flex-1 flex flex-col gap-4">
           <div className="flex flex-col items-center justify-center py-6 text-center gap-4 bg-slate-50 rounded-xl border border-slate-100 flex-1">
-            {!isGoogleLoggedIn ? (
+            {!googleAccountInfo.isLoggedIn ? (
               <>
                 <div className="w-12 h-12 bg-slate-200/50 rounded-full flex items-center justify-center text-slate-400">
                   <MailOutlined className="text-xl" />
@@ -220,57 +207,52 @@ export function TraeSection() {
                 Gmail。
               </p>
 
-              <div className="flex gap-2 mb-6">
-                <Input
-                  placeholder="请输入您的 Gmail 基础邮箱"
-                  value={inputEmail}
-                  onChange={(e) => setInputEmail(e.target.value)}
-                  prefix={<MailOutlined className="text-slate-400" />}
-                />
-                <Button type="primary" onClick={handleSaveBaseEmail}>
-                  保存
-                </Button>
-              </div>
-
-              {baseEmail && baseEmail.includes('@') && (
-                <div className="flex flex-col gap-3">
+              {googleAccountInfo.email && (
+                <div className="flex flex-col gap-3 w-full">
                   <Text type="secondary" className="text-left">
-                    选择以下别名开始申请：
+                    已登录 Gmail: {googleAccountInfo.email}
                   </Text>
-                  {getAliases().map((alias) => (
-                    <Button
-                      key={alias}
-                      onClick={() => handleApplyEmail(alias)}
-                      loading={loading}
-                      className="w-full text-left flex justify-between items-center h-10"
-                    >
-                      <span>{alias}</span>
-                      <span className="text-indigo-500 text-xs bg-indigo-50 px-2 py-1 rounded">
-                        使用此别名
-                      </span>
-                    </Button>
-                  ))}
-
-                  <Divider className="my-2" />
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="或输入自定义别名邮箱"
-                      id="customAlias"
-                    />
-                    <Button
-                      onClick={() => {
-                        const val = (
-                          document.getElementById(
-                            'customAlias'
-                          ) as HTMLInputElement
-                        )?.value
-                        if (val) handleApplyEmail(val)
-                      }}
-                      loading={loading}
-                    >
-                      申请
-                    </Button>
-                  </div>
+                  <Table
+                    dataSource={getAliases().map((alias) => ({
+                      key: alias,
+                      email: alias,
+                      lastAppliedTime: aliasRecords[alias]
+                    }))}
+                    columns={[
+                      {
+                        title: '邮箱别名',
+                        dataIndex: 'email',
+                        key: 'email'
+                      },
+                      {
+                        title: '上次申请时间',
+                        dataIndex: 'lastAppliedTime',
+                        key: 'lastAppliedTime',
+                        render: (text: string) =>
+                          text ? (
+                            new Date(text).toLocaleString()
+                          ) : (
+                            <Text type="secondary">未申请</Text>
+                          )
+                      },
+                      {
+                        title: '操作',
+                        key: 'action',
+                        render: (_, record) => (
+                          <Button
+                            type="link"
+                            loading={loading}
+                            onClick={() => handleApplyEmail(record.email)}
+                          >
+                            申请此别名
+                          </Button>
+                        )
+                      }
+                    ]}
+                    pagination={false}
+                    scroll={{ y: 300 }}
+                    size="small"
+                  />
                 </div>
               )}
             </div>

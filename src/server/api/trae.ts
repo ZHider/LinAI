@@ -6,19 +6,10 @@ import { bindLogRoutes } from './utils'
 const traeManager = new TraeManager()
 
 const traeApi = new Hono()
-  .get('/base-email', async (c) => {
+  .get('/alias-records', async (c) => {
     try {
-      const email = await TraeStorage.getBaseEmail()
-      return c.json({ success: true, data: email })
-    } catch (error: any) {
-      return c.json({ success: false, error: error.message }, 500)
-    }
-  })
-  .post('/base-email', async (c) => {
-    try {
-      const { email } = await c.req.json()
-      await TraeStorage.setBaseEmail(email || '')
-      return c.json({ success: true })
+      const records = await TraeStorage.getAliasRecords()
+      return c.json({ success: true, data: records })
     } catch (error: any) {
       return c.json({ success: false, error: error.message }, 500)
     }
@@ -30,6 +21,9 @@ const traeApi = new Hono()
         return c.json({ success: false, error: 'Email is required' }, 400)
       }
       const result = await traeManager.applyEmail(email)
+      if (result.success) {
+        await TraeStorage.recordAliasApplyTime(email, new Date().toISOString())
+      }
       return c.json(result)
     } catch (error: any) {
       return c.json({ success: false, error: error.message }, 500)

@@ -51,10 +51,40 @@ export class TraeManager {
       await traePage.fill('input[type="password"]', password)
 
       this.logger.info('点击发送验证码...')
-      const sendCodeButton = traePage
-        .getByRole('button', { name: /Send|Continue|Sign up/i })
-        .first()
-      await sendCodeButton.click()
+      const sendCodeButton = traePage.getByText(/Send Code/i).first()
+
+      const [response] = await Promise.all([
+        traePage.waitForResponse((res) =>
+          res.url().includes('/passport/web/email/send_code/')
+        ),
+        sendCodeButton.click()
+      ])
+
+      const responseText = await response.text()
+      if (responseText.includes('Email is linked to another account')) {
+        this.logger.info('该邮箱已注册，准备跳转登录...')
+        await traePage.goto('https://www.trae.ai/login')
+
+        this.logger.info('填写邮箱和密码进行登录...')
+        await traePage.waitForSelector('input[type="email"]')
+        await traePage.fill('input[type="email"]', email)
+        await traePage.fill('input[type="password"]', password)
+
+        this.logger.info('提交登录...')
+        await traePage.keyboard.press('Enter')
+        await traePage.waitForTimeout(5000)
+
+        const traeAccount = {
+          id: uuidv4(),
+          email,
+          password,
+          createdAt: new Date().toISOString()
+        }
+        this.logger.info('Trae 账号登录成功')
+        this.logger.info('账号切换完成，可以使用 Trae 本地客户端验证')
+
+        return { success: true, data: traeAccount }
+      }
 
       // 2. 访问 Gmail
       this.logger.info('访问 Gmail 获取验证码...')

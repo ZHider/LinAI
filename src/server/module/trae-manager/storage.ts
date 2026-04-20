@@ -7,27 +7,24 @@ export interface TraeAccount {
   createdAt: string
 }
 
-export interface TraeConfig {
-  baseEmail: string
-}
-
-const CONFIG_FILE = path.join('data', 'trae_config.json')
+const ALIAS_RECORDS_FILE = path.join('data', 'trae_alias_records.json')
 
 export class TraeStorage {
-  static async getBaseEmail(): Promise<string> {
+  static async getAliasRecords(): Promise<Record<string, string>> {
     try {
-      if (!(await fs.pathExists(CONFIG_FILE))) {
-        return ''
+      if (!(await fs.pathExists(ALIAS_RECORDS_FILE))) {
+        return {}
       }
-      const cfg = await fs.readJson(CONFIG_FILE)
-      return cfg.baseEmail || ''
+      return await fs.readJson(ALIAS_RECORDS_FILE)
     } catch (e) {
-      return ''
+      return {}
     }
   }
 
-  static async setBaseEmail(baseEmail: string) {
-    await fs.ensureDir(path.dirname(CONFIG_FILE))
-    await fs.writeJson(CONFIG_FILE, { baseEmail }, { spaces: 2 })
+  static async recordAliasApplyTime(email: string, time: string) {
+    await fs.ensureDir(path.dirname(ALIAS_RECORDS_FILE))
+    const records = await this.getAliasRecords()
+    records[email] = time
+    await fs.writeJson(ALIAS_RECORDS_FILE, records, { spaces: 2 })
   }
 }
