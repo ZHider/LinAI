@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
-import { TraeManager } from './module/trae-manager/index'
-import { TraeStorage } from './module/trae-manager/storage'
-import { bindLogRoutes } from './api/utils'
+import { TraeManager } from '../module/trae-manager/index'
+import { TraeStorage } from '../module/trae-manager/storage'
+import { bindLogRoutes } from './utils'
 
 const traeManager = new TraeManager()
 

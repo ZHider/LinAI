@@ -1,33 +1,33 @@
-import { Hono } from "hono";
-import { serve } from "@hono/node-server";
-import { serveStatic } from "@hono/node-server/serve-static";
-import wanApi from "./wan";
-import traeApi from "./trae";
-import geminiApi from "./gemini";
+import { Hono } from 'hono'
+import { serve } from '@hono/node-server'
+import { serveStatic } from '@hono/node-server/serve-static'
+import wanApi from './api/wan'
+import traeApi from './api/trae'
+import geminiApi from './api/gemini'
 
-const app = new Hono();
+const app = new Hono()
 
 const routes = app
-  .route("/api/wan", wanApi)
-  .route("/api/trae", traeApi)
-  .route("/api/gemini", geminiApi);
-export type AppType = typeof routes;
+  .route('/api/wan', wanApi)
+  .route('/api/trae', traeApi)
+  .route('/api/gemini', geminiApi)
+export type AppType = typeof routes
 
-const port = 3000;
+const port = 3000
 
-if (process.env.NODE_ENV !== "development") {
+if (process.env.NODE_ENV !== 'development') {
   // Production serving of static files
-  app.use("/*", serveStatic({ root: "./dist" }));
+  app.use('/*', serveStatic({ root: './dist' }))
 }
 
 serve(
   {
     fetch: app.fetch,
-    port: port,
+    port: port
   },
   (info) => {
-    console.log(`Server is running on http://localhost:${info.port}`);
-  },
-);
+    console.log(`Server is running on http://localhost:${info.port}`)
+  }
+)
 
-export default app;
+export default app
