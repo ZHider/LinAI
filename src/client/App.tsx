@@ -1,4 +1,4 @@
-import { WanSection } from './components/WanSection'
+import { WanPreview } from './components/WanSection/WanPreview'
 import { GeminiSection } from './components/GeminiSection'
 import { TaskSection } from './components/TaskSection'
 import { ThunderboltOutlined } from '@ant-design/icons'
@@ -32,7 +32,7 @@ function App() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <WanSection />
+            <WanPreview />
             <GeminiSection />
             {/* 未来可以在这里添加更多卡片 */}
           </div>
