@@ -3,12 +3,14 @@ import { serve } from '@hono/node-server'
 import { serveStatic } from '@hono/node-server/serve-static'
 import wanApi from './api/wan'
 import geminiApi from './api/gemini'
+import taskApi from './api/task'
 
 const app = new Hono()
 
 const routes = app
   .route('/api/wan', wanApi)
   .route('/api/gemini', geminiApi)
+  .route('/api/task', taskApi)
 export type AppType = typeof routes
 
 const port = 3000
