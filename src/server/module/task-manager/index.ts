@@ -10,6 +10,7 @@ export interface TaskTemplate {
   quality: string
   aspectRatio: string
   createdAt: number
+  source: 'wan' | 'gemini'
 }
 
 export class TaskManager {

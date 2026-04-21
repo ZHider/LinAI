@@ -1,6 +1,26 @@
 import { useState, useEffect } from 'react'
-import { ScheduleOutlined, InboxOutlined, DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons'
-import { Form, Input, Radio, Select, Button, Card, message, Upload, Spin, Tag, Space, Popconfirm } from 'antd'
+import {
+  ScheduleOutlined,
+  InboxOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+  UploadOutlined,
+  ArrowLeftOutlined
+} from '@ant-design/icons'
+import {
+  Form,
+  Input,
+  Radio,
+  Select,
+  Button,
+  Card,
+  message,
+  Upload,
+  Spin,
+  Tag,
+  Space,
+  Popconfirm
+} from 'antd'
 
 interface TaskTemplate {
   id: string
@@ -10,6 +30,7 @@ interface TaskTemplate {
   quality: string
   aspectRatio: string
   createdAt: number
+  source?: 'wan' | 'gemini'
 }
 
 export function TaskSection() {
@@ -18,6 +39,9 @@ export function TaskSection() {
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [imageUrl, setImageUrl] = useState<string>('')
+  const [selectedSource, setSelectedSource] = useState<'wan' | 'gemini' | null>(
+    null
+  )
 
   const fetchTemplates = async () => {
     setLoading(true)
@@ -59,7 +83,7 @@ export function TaskSection() {
         body: JSON.stringify(payload)
       })
       const json = await res.json()
-      
+
       if (json.success) {
         message.success('保存成功')
         form.resetFields()
@@ -101,6 +125,123 @@ export function TaskSection() {
     return false // 阻止默认上传行为
   }
 
+  const renderTemplateList = () => {
+    if (selectedSource === null) {
+      const wanCount = templates.filter((t) => t.source === 'wan').length
+      const geminiCount = templates.filter((t) => t.source === 'gemini').length
+
+      return (
+        <div className="grid grid-cols-2 gap-4 h-full content-start mt-2">
+          <Card
+            hoverable
+            onClick={() => setSelectedSource('wan')}
+            className="text-center cursor-pointer border-emerald-100 hover:border-emerald-300 transition-colors"
+          >
+            <div className="text-xl font-bold mb-2 text-emerald-600">Wan</div>
+            <div className="text-slate-500">{wanCount} 个模板</div>
+          </Card>
+          <Card
+            hoverable
+            onClick={() => setSelectedSource('gemini')}
+            className="text-center cursor-pointer border-blue-100 hover:border-blue-300 transition-colors"
+          >
+            <div className="text-xl font-bold mb-2 text-blue-600">Gemini</div>
+            <div className="text-slate-500">{geminiCount} 个模板</div>
+          </Card>
+        </div>
+      )
+    }
+
+    const filteredTemplates = templates.filter(
+      (t) => t.source === selectedSource
+    )
+
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex items-center gap-2 mb-4">
+          <Button
+            type="text"
+            icon={<ArrowLeftOutlined />}
+            onClick={() => setSelectedSource(null)}
+            className="text-slate-500 hover:text-slate-800 -ml-2"
+          />
+          <h4 className="text-md font-medium text-slate-800 m-0">
+            {selectedSource === 'wan' ? 'Wan' : 'Gemini'} 模板 (
+            {filteredTemplates.length})
+          </h4>
+        </div>
+
+        <div
+          className="flex-1 overflow-y-auto pr-2"
+          style={{ maxHeight: '550px' }}
+        >
+          {filteredTemplates.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-slate-400 space-y-4 border-2 border-dashed border-slate-100 rounded-xl bg-slate-50/50">
+              <InboxOutlined className="text-5xl text-slate-300" />
+              <p className="text-sm font-medium">该分类下暂无模板内容</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredTemplates.map((item) => (
+                <Card
+                  key={item.id}
+                  size="small"
+                  className="shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <div className="flex gap-4">
+                    <div className="w-24 h-24 shrink-0 rounded-md overflow-hidden bg-slate-100 border border-slate-200">
+                      <img
+                        src={item.image}
+                        alt="template"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0 flex flex-col">
+                      <div className="flex justify-between items-start mb-2">
+                        <Space size={[0, 4]} wrap>
+                          <Tag
+                            color={item.type === 'image' ? 'blue' : 'purple'}
+                          >
+                            {item.type === 'image' ? '图片' : '视频'}
+                          </Tag>
+                          <Tag color="green">{item.quality}</Tag>
+                          <Tag color="orange">{item.aspectRatio}</Tag>
+                        </Space>
+                        <Popconfirm
+                          title="确定要删除该模板吗？"
+                          onConfirm={() => handleDelete(item.id)}
+                          okText="确定"
+                          cancelText="取消"
+                          okButtonProps={{ danger: true }}
+                        >
+                          <Button
+                            type="text"
+                            danger
+                            icon={<DeleteOutlined />}
+                            size="small"
+                          />
+                        </Popconfirm>
+                      </div>
+                      <p
+                        className="text-sm text-slate-600 line-clamp-2 mt-1"
+                        title={item.prompt}
+                      >
+                        {item.prompt}
+                      </p>
+                      <div className="mt-auto text-xs text-slate-400">
+                        {new Date(item.createdAt).toLocaleString()}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <section className="space-y-6">
       <div className="flex items-center gap-2">
@@ -122,14 +263,54 @@ export function TaskSection() {
             form={form}
             layout="vertical"
             onFinish={handleFinish}
-            initialValues={{ type: 'image', quality: '1080p', aspectRatio: '16:9' }}
+            initialValues={{
+              source: 'wan',
+              type: 'image',
+              quality: '1080p',
+              aspectRatio: '16:9'
+            }}
           >
-            <Form.Item name="type" label="任务类型" rules={[{ required: true }]}>
-              <Radio.Group optionType="button" buttonStyle="solid">
-                <Radio.Button value="image">图片</Radio.Button>
-                <Radio.Button value="video">视频</Radio.Button>
-              </Radio.Group>
-            </Form.Item>
+            <div className="flex gap-4">
+              <Form.Item
+                name="source"
+                label="模型来源"
+                className="flex-1"
+                rules={[{ required: true }]}
+              >
+                <Radio.Group
+                  optionType="button"
+                  buttonStyle="solid"
+                  className="w-full flex"
+                >
+                  <Radio.Button value="wan" className="flex-1 text-center">
+                    Wan
+                  </Radio.Button>
+                  <Radio.Button value="gemini" className="flex-1 text-center">
+                    Gemini
+                  </Radio.Button>
+                </Radio.Group>
+              </Form.Item>
+
+              <Form.Item
+                name="type"
+                label="任务类型"
+                className="flex-1"
+                rules={[{ required: true }]}
+              >
+                <Radio.Group
+                  optionType="button"
+                  buttonStyle="solid"
+                  className="w-full flex"
+                >
+                  <Radio.Button value="image" className="flex-1 text-center">
+                    图片
+                  </Radio.Button>
+                  <Radio.Button value="video" className="flex-1 text-center">
+                    视频
+                  </Radio.Button>
+                </Radio.Group>
+              </Form.Item>
+            </div>
 
             <Form.Item label="上传图片" required>
               <Upload
@@ -140,18 +321,37 @@ export function TaskSection() {
                 <Button icon={<UploadOutlined />}>选择图片</Button>
               </Upload>
               {imageUrl && (
-                <div className="mt-4 rounded-lg overflow-hidden border border-slate-200" style={{ width: '120px', height: '120px' }}>
-                  <img src={imageUrl} alt="preview" className="w-full h-full object-cover" />
+                <div
+                  className="mt-4 rounded-lg overflow-hidden border border-slate-200"
+                  style={{ width: '120px', height: '120px' }}
+                >
+                  <img
+                    src={imageUrl}
+                    alt="preview"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               )}
             </Form.Item>
 
-            <Form.Item name="prompt" label="提示词" rules={[{ required: true, message: '请填写提示词' }]}>
-              <Input.TextArea rows={4} placeholder="请输入生成内容的提示词..." />
+            <Form.Item
+              name="prompt"
+              label="提示词"
+              rules={[{ required: true, message: '请填写提示词' }]}
+            >
+              <Input.TextArea
+                rows={4}
+                placeholder="请输入生成内容的提示词..."
+              />
             </Form.Item>
 
             <div className="flex gap-4">
-              <Form.Item name="quality" label="画质" className="flex-1" rules={[{ required: true }]}>
+              <Form.Item
+                name="quality"
+                label="画质"
+                className="flex-1"
+                rules={[{ required: true }]}
+              >
                 <Select>
                   <Select.Option value="720p">720p</Select.Option>
                   <Select.Option value="1080p">1080p</Select.Option>
@@ -160,7 +360,12 @@ export function TaskSection() {
                 </Select>
               </Form.Item>
 
-              <Form.Item name="aspectRatio" label="图片比例" className="flex-1" rules={[{ required: true }]}>
+              <Form.Item
+                name="aspectRatio"
+                label="图片比例"
+                className="flex-1"
+                rules={[{ required: true }]}
+              >
                 <Select>
                   <Select.Option value="16:9">16:9 (横屏)</Select.Option>
                   <Select.Option value="9:16">9:16 (竖屏)</Select.Option>
@@ -171,7 +376,14 @@ export function TaskSection() {
             </div>
 
             <Form.Item className="mb-0 pt-4 border-t border-slate-100">
-              <Button type="primary" htmlType="submit" loading={submitting} block size="large" className="bg-emerald-600 hover:bg-emerald-700">
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={submitting}
+                block
+                size="large"
+                className="bg-emerald-600 hover:bg-emerald-700"
+              >
                 保存模板
               </Button>
             </Form.Item>
@@ -180,58 +392,19 @@ export function TaskSection() {
 
         {/* 右侧：模板列表 */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col h-full">
-          <h3 className="text-lg font-semibold text-slate-800 mb-4">已有模板 ({templates.length})</h3>
-          
-          <div className="flex-1 overflow-y-auto pr-2" style={{ maxHeight: '600px' }}>
-            {loading ? (
-              <div className="flex justify-center items-center h-40">
-                <Spin />
-              </div>
-            ) : templates.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-slate-400 space-y-4 border-2 border-dashed border-slate-100 rounded-xl bg-slate-50/50">
-                <InboxOutlined className="text-5xl text-slate-300" />
-                <p className="text-sm font-medium">暂无模板内容</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {templates.map(item => (
-                  <Card key={item.id} size="small" className="shadow-sm hover:shadow-md transition-shadow">
-                    <div className="flex gap-4">
-                      <div className="w-24 h-24 shrink-0 rounded-md overflow-hidden bg-slate-100 border border-slate-200">
-                        <img src={item.image} alt="template" className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-1 min-w-0 flex flex-col">
-                        <div className="flex justify-between items-start mb-2">
-                          <Space size={[0, 4]} wrap>
-                            <Tag color={item.type === 'image' ? 'blue' : 'purple'}>
-                              {item.type === 'image' ? '图片' : '视频'}
-                            </Tag>
-                            <Tag color="green">{item.quality}</Tag>
-                            <Tag color="orange">{item.aspectRatio}</Tag>
-                          </Space>
-                          <Popconfirm
-                            title="确定要删除该模板吗？"
-                            onConfirm={() => handleDelete(item.id)}
-                            okText="确定"
-                            cancelText="取消"
-                            okButtonProps={{ danger: true }}
-                          >
-                            <Button type="text" danger icon={<DeleteOutlined />} size="small" />
-                          </Popconfirm>
-                        </div>
-                        <p className="text-sm text-slate-600 line-clamp-2 mt-1" title={item.prompt}>
-                          {item.prompt}
-                        </p>
-                        <div className="mt-auto text-xs text-slate-400">
-                          {new Date(item.createdAt).toLocaleString()}
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-slate-800 m-0">
+              已有模板 ({templates.length})
+            </h3>
           </div>
+
+          {loading ? (
+            <div className="flex justify-center items-center h-40">
+              <Spin />
+            </div>
+          ) : (
+            renderTemplateList()
+          )}
         </div>
       </div>
     </section>
