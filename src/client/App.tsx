@@ -1,6 +1,6 @@
 import { WanPreview } from './components/WanSection/WanPreview'
 import { GeminiSection } from './components/GeminiSection'
-import { TaskSection } from './components/TaskSection'
+import { TemplateSection } from './components/TemplateSection'
 import { ThunderboltOutlined } from '@ant-design/icons'
 
 function App() {
@@ -39,7 +39,7 @@ function App() {
         </section>
 
         {/* 任务编排 */}
-        <TaskSection />
+        <TemplateSection />
       </main>
     </div>
   )

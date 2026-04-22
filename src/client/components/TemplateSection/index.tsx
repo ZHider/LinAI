@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react'
 import { ScheduleOutlined } from '@ant-design/icons'
 import { message } from 'antd'
-import { TaskForm } from './TaskForm'
+import { TemplateForm } from './TemplateForm'
 import { TemplateList } from './TemplateList'
 import { TaskTemplate } from './types'
 
-export function TaskSection() {
+export function TemplateSection() {
   const [templates, setTemplates] = useState<TaskTemplate[]>([])
   const [loading, setLoading] = useState(false)
 
   const fetchTemplates = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/task/templates')
+      const res = await fetch('/api/template')
       const json = await res.json()
       if (json.success) {
         setTemplates(json.data)
@@ -43,7 +43,7 @@ export function TaskSection() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* 左侧：表单 */}
-        <TaskForm onSuccess={fetchTemplates} />
+        <TemplateForm onSuccess={fetchTemplates} />
 
         {/* 右侧：模板列表 */}
         <TemplateList

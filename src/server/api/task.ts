@@ -6,7 +6,7 @@ import { TaskManager } from '../module/task-manager'
 export const taskManager = new TaskManager()
 const taskApi = new Hono()
 
-// Serve uploaded images
+// Serve uploaded images (for backward compatibility or task images)
 taskApi.get('/images/:filename', async (c) => {
   const filename = c.req.param('filename')
   const filepath = path.join(process.cwd(), 'data', 'images', filename)
@@ -17,31 +17,6 @@ taskApi.get('/images/:filename', async (c) => {
     return c.body(file)
   }
   return c.notFound()
-})
-
-taskApi.get('/templates', async (c) => {
-  const templates = await taskManager.getTemplates()
-  return c.json({ success: true, data: templates })
-})
-
-taskApi.post('/templates', async (c) => {
-  try {
-    const body = await c.req.json()
-    const newTemplate = await taskManager.addTemplate(body)
-    return c.json({ success: true, data: newTemplate })
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500)
-  }
-})
-
-taskApi.delete('/templates/:id', async (c) => {
-  try {
-    const id = c.req.param('id')
-    const success = await taskManager.deleteTemplate(id)
-    return c.json({ success })
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500)
-  }
 })
 
 export default taskApi

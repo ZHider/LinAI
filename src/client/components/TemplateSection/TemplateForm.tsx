@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons'
 import { Form, Input, Radio, Button, message, Upload } from 'antd'
 
-interface TaskFormProps {
+interface TemplateFormProps {
   onSuccess: () => void
 }
 
-export function TaskForm({ onSuccess }: TaskFormProps) {
+export function TemplateForm({ onSuccess }: TemplateFormProps) {
   const [form] = Form.useForm()
   const [submitting, setSubmitting] = useState(false)
   const [imageUrls, setImageUrls] = useState<string[]>([])
@@ -24,7 +24,7 @@ export function TaskForm({ onSuccess }: TaskFormProps) {
         images: imageUrls
       }
 
-      const res = await fetch('/api/task/templates', {
+      const res = await fetch('/api/template', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -100,38 +100,29 @@ export function TaskForm({ onSuccess }: TaskFormProps) {
             <Button icon={<UploadOutlined />}>选择多张图片</Button>
           </Upload>
           {imageUrls.length > 0 && (
-            <div className="mt-4 relative ml-2" style={{ height: '120px' }}>
-              {imageUrls.map((url, index) => {
-                const isFirst = index === 0;
-                const isLast = index === imageUrls.length - 1 && imageUrls.length > 1;
-                const rotation = isFirst ? -6 : isLast ? 6 : 0;
-                const leftOffset = index * 30;
-                const zIndex = isFirst ? 10 : isLast ? 8 : 9;
-
-                return (
-                  <div
-                    key={index}
-                    className="absolute rounded-lg overflow-hidden border-2 border-white shadow-md bg-slate-100"
-                    style={{
-                      width: '80px',
-                      height: '120px',
-                      left: `${leftOffset}px`,
-                      zIndex: zIndex,
-                      transform: `rotate(${rotation}deg)`,
-                      transformOrigin: 'bottom center',
-                      transition: 'all 0.3s ease'
-                    }}
-                  >
-                    <img
-                      src={url}
-                      alt={`preview-${index}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                );
-              })}
+            <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+              {imageUrls.map((url, index) => (
+                <div
+                  key={index}
+                  className="shrink-0 rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-100"
+                  style={{ width: '80px', height: '120px' }}
+                >
+                  <img
+                    src={url}
+                    alt={`preview-${index}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
             </div>
           )}
+        </Form.Item>
+
+        <Form.Item
+          name="title"
+          label="标题（可选）"
+        >
+          <Input placeholder="请输入模板标题..." />
         </Form.Item>
 
         <Form.Item

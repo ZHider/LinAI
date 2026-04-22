@@ -1,5 +1,6 @@
 export interface TaskTemplate {
   id: string
+  title?: string
   images: string[]
   prompt: string
   createdAt: number

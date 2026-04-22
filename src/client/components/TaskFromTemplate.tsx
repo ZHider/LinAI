@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Button, Select, message, Spin, Tag, Popconfirm } from 'antd'
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons'
-import { TaskTemplate } from './TaskSection/types'
+import { TaskTemplate } from './TemplateSection/types'
 
 interface Task {
   id: string
@@ -27,7 +27,7 @@ export function TaskFromTemplate({ moduleId, source }: TaskFromTemplateProps) {
 
   const fetchTemplates = async () => {
     try {
-      const res = await fetch('/api/task/templates')
+      const res = await fetch('/api/template')
       const json = await res.json()
       if (json.success) {
         setTemplates(json.data.filter((t: TaskTemplate) => t.source === source))
@@ -143,7 +143,11 @@ export function TaskFromTemplate({ moduleId, source }: TaskFromTemplateProps) {
             value={selectedTemplate}
             onChange={setSelectedTemplate}
             options={templates.map((t) => ({
-              label: t.prompt,
+              label: t.title ? (
+                <span className="font-bold">{t.title}</span>
+              ) : (
+                t.prompt
+              ),
               value: t.id
             }))}
             allowClear

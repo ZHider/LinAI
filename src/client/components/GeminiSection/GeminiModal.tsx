@@ -31,7 +31,7 @@ export function GeminiModal({ open, onClose }: GeminiModalProps) {
   const fetchTemplates = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/task/templates')
+      const res = await fetch('/api/template')
       const data = await res.json()
       if (data.success) {
         const geminiTemplates = data.data.filter((t: any) => t.source === 'gemini-image')

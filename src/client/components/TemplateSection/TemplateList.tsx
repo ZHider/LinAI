@@ -20,7 +20,7 @@ export function TemplateList({ templates, loading, onRefresh }: TemplateListProp
 
   const handleDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/task/templates/${id}`, {
+      const res = await fetch(`/api/template/${id}`, {
         method: 'DELETE'
       })
       const json = await res.json()
@@ -110,15 +110,14 @@ export function TemplateList({ templates, loading, onRefresh }: TemplateListProp
                         return (
                           <div
                             key={index}
-                            className="absolute rounded-md overflow-hidden bg-slate-100 border border-slate-200 shadow-sm"
+                            className="absolute rounded-md overflow-hidden bg-slate-100 border border-slate-200 shadow-sm transition-all duration-300 ease-in-out hover:!z-50 hover:scale-105 cursor-pointer"
                             style={{
                               width: '64px',
                               height: '96px',
                               left: `${leftOffset}px`,
                               zIndex: zIndex,
                               transform: `rotate(${rotation}deg)`,
-                              transformOrigin: 'bottom center',
-                              transition: 'all 0.3s ease'
+                              transformOrigin: 'bottom center'
                             }}
                           >
                             <img
@@ -154,6 +153,11 @@ export function TemplateList({ templates, loading, onRefresh }: TemplateListProp
                           />
                         </Popconfirm>
                       </div>
+                      {item.title && (
+                        <div className="font-bold text-slate-800 mb-1 truncate" title={item.title}>
+                          {item.title}
+                        </div>
+                      )}
                       <p
                         className="text-sm text-slate-600 line-clamp-2 mt-1"
                         title={item.prompt}

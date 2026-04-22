@@ -1,8 +1,8 @@
 import { Hono } from 'hono'
 import { geminiManager } from '../module/gemini-manager/index'
-import { TaskManager, GeminiTaskTemplate } from '../module/task-manager/index'
+import { TemplateManager } from '../module/template-manager/index'
 
-const taskManager = new TaskManager()
+const templateManager = new TemplateManager()
 
 const geminiApi = new Hono().post('/generate', async (c) => {
   try {
@@ -17,8 +17,8 @@ const geminiApi = new Hono().post('/generate', async (c) => {
       return c.json({ success: false, error: 'Template ID is required' }, 400)
     }
 
-    const templates = await taskManager.getTemplates()
-    const template = templates.find(t => t.id === templateId) as GeminiTaskTemplate
+    const templates = await templateManager.getTemplates()
+    const template = templates.find((t) => t.id === templateId)
 
     if (!template) {
       return c.json({ success: false, error: 'Template not found' }, 404)
