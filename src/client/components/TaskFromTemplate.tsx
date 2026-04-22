@@ -73,6 +73,7 @@ export function TaskFromTemplate({ moduleId, source }: TaskFromTemplateProps) {
     try {
       const res = await client.api.task[':moduleId']['from-template'].$post({
         param: { moduleId },
+        // The server route does not declare a validator, so Hono can't infer the JSON body here.
         json: { templateId: selectedTemplate }
       })
       const json = await res.json()

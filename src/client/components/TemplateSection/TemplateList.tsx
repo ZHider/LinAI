@@ -17,10 +17,14 @@ interface TemplateListProps {
   onRefresh: () => void
 }
 
-export function TemplateList({ templates, loading, onRefresh }: TemplateListProps) {
-  const [selectedSource, setSelectedSource] = useState<'wan-video' | 'gemini-image' | null>(
-    null
-  )
+export function TemplateList({
+  templates,
+  loading,
+  onRefresh
+}: TemplateListProps) {
+  const [selectedSource, setSelectedSource] = useState<
+    'wan-video' | 'gemini-image' | null
+  >(null)
 
   const handleDelete = async (id: string) => {
     try {
@@ -40,7 +44,9 @@ export function TemplateList({ templates, loading, onRefresh }: TemplateListProp
   const renderTemplateList = () => {
     if (selectedSource === null) {
       const wanCount = templates.filter((t) => t.source === 'wan-video').length
-      const geminiCount = templates.filter((t) => t.source === 'gemini-image').length
+      const geminiCount = templates.filter(
+        (t) => t.source === 'gemini-image'
+      ).length
 
       return (
         <div className="grid grid-cols-2 gap-4 h-full content-start mt-2">
@@ -102,40 +108,45 @@ export function TemplateList({ templates, loading, onRefresh }: TemplateListProp
                 >
                   <div className="flex gap-4">
                     <div className="w-24 h-24 shrink-0 relative ml-2">
-                      {item.images && item.images.map((url, index) => {
-                        const isFirst = index === 0;
-                        const isLast = index === item.images.length - 1 && item.images.length > 1;
-                        const rotation = isFirst ? -6 : isLast ? 6 : 0;
-                        const leftOffset = index * 10; // Smaller offset for list view
-                        const zIndex = isFirst ? 10 : isLast ? 8 : 9;
+                      {item.images &&
+                        item.images.map((url, index) => {
+                          const isFirst = index === 0
+                          const isLast =
+                            index === item.images.length - 1 &&
+                            item.images.length > 1
+                          const rotation = isFirst ? -6 : isLast ? 6 : 0
+                          const leftOffset = index * 10 // Smaller offset for list view
+                          const zIndex = isFirst ? 10 : isLast ? 8 : 9
 
-                        return (
-                          <div
-                            key={index}
-                            className="absolute rounded-md overflow-hidden bg-slate-100 border border-slate-200 shadow-sm transition-all duration-300 ease-in-out hover:!z-50 hover:scale-105 cursor-pointer"
-                            style={{
-                              width: '64px',
-                              height: '96px',
-                              left: `${leftOffset}px`,
-                              zIndex: zIndex,
-                              transform: `rotate(${rotation}deg)`,
-                              transformOrigin: 'bottom center'
-                            }}
-                          >
-                            <img
-                              src={url}
-                              alt="template"
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        );
-                      })}
+                          return (
+                            <div
+                              key={index}
+                              className="absolute rounded-md overflow-hidden bg-slate-100 border border-slate-200 shadow-sm transition-all duration-300 ease-in-out hover:!z-50 hover:scale-105 cursor-pointer"
+                              style={{
+                                width: '64px',
+                                height: '96px',
+                                left: `${leftOffset}px`,
+                                zIndex: zIndex,
+                                transform: `rotate(${rotation}deg)`,
+                                transformOrigin: 'bottom center'
+                              }}
+                            >
+                              <img
+                                src={url}
+                                alt="template"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )
+                        })}
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col">
                       <div className="flex justify-between items-start mb-2">
                         <Space size={[0, 4]} wrap>
                           <Tag
-                            color={item.source === 'gemini-image' ? 'blue' : 'purple'}
+                            color={
+                              item.source === 'gemini-image' ? 'blue' : 'purple'
+                            }
                           >
                             {item.source === 'gemini-image' ? '图片' : '视频'}
                           </Tag>
@@ -156,7 +167,10 @@ export function TemplateList({ templates, loading, onRefresh }: TemplateListProp
                         </Popconfirm>
                       </div>
                       {item.title && (
-                        <div className="font-bold text-slate-800 mb-1 truncate" title={item.title}>
+                        <div
+                          className="font-bold text-slate-800 mb-1 truncate"
+                          title={item.title}
+                        >
                           {item.title}
                         </div>
                       )}
