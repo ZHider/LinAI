@@ -2,12 +2,12 @@ import fs from 'fs-extra'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 
+import crypto from 'crypto'
+
 export interface TaskTemplate {
   id: string
-  image: string
+  images: string[]
   prompt: string
-  quality: string
-  aspectRatio: string
   createdAt: number
   source: 'wan-video' | 'gemini-image'
 }
@@ -54,23 +54,33 @@ export class TaskManager {
     const templates = await this.getTemplates()
     const id = uuidv4()
     
-    let imageUrl = template.image
-    // If it's a base64 string, save it as a file
-    if (imageUrl.startsWith('data:image')) {
-      const matches = imageUrl.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/)
-      if (matches) {
-        const ext = matches[1] === 'jpeg' ? 'jpg' : matches[1]
-        const buffer = Buffer.from(matches[2], 'base64')
-        const filename = `${id}.${ext}`
-        const filepath = path.join(this.imagesDir, filename)
-        await fs.writeFile(filepath, buffer)
-        imageUrl = `/api/task/images/${filename}`
+    let imageUrls: string[] = []
+    
+    if (template.images && Array.isArray(template.images)) {
+      for (const imgUrl of template.images) {
+        if (imgUrl.startsWith('data:image')) {
+          const matches = imgUrl.match(/^data:image\/([a-zA-Z0-9]+);base64,(.+)$/)
+          if (matches) {
+            const ext = matches[1] === 'jpeg' ? 'jpg' : matches[1]
+            const buffer = Buffer.from(matches[2], 'base64')
+            const hash = crypto.createHash('md5').update(buffer).digest('hex')
+            const filename = `${hash}.${ext}`
+            const filepath = path.join(this.imagesDir, filename)
+            
+            if (!fs.existsSync(filepath)) {
+              await fs.writeFile(filepath, buffer)
+            }
+            imageUrls.push(`/api/task/images/${filename}`)
+          }
+        } else {
+          imageUrls.push(imgUrl)
+        }
       }
     }
 
     const newTemplate: TaskTemplate = {
       ...template,
-      image: imageUrl,
+      images: imageUrls,
       id,
       createdAt: Date.now()
     }
@@ -86,16 +96,9 @@ export class TaskManager {
       return false
     }
 
-    // Attempt to delete associated image file
-    if (target.image.startsWith('/api/task/images/')) {
-      const filename = target.image.split('/').pop()
-      if (filename) {
-        const filepath = path.join(this.imagesDir, filename)
-        if (fs.existsSync(filepath)) {
-          await fs.unlink(filepath)
-        }
-      }
-    }
+    // Attempt to delete associated image files (Note: MD5 hashing means images could be shared among multiple templates. It's safer not to delete them, but we'll leave it simple for now or check usage).
+    // Given the task, let's not delete the physical file since other templates might be using the same md5 image.
+    // So we just remove from DB.
 
     const filtered = templates.filter(t => t.id !== id)
     await fs.writeFile(this.dbPath, JSON.stringify(filtered, null, 2), 'utf-8')

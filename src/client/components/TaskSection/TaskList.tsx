@@ -99,12 +99,36 @@ export function TaskList({ templates, loading, onRefresh }: TaskListProps) {
                   className="shadow-sm hover:shadow-md transition-shadow"
                 >
                   <div className="flex gap-4">
-                    <div className="w-24 h-24 shrink-0 rounded-md overflow-hidden bg-slate-100 border border-slate-200">
-                      <img
-                        src={item.image}
-                        alt="template"
-                        className="w-full h-full object-cover"
-                      />
+                    <div className="w-24 h-24 shrink-0 relative ml-2">
+                      {item.images && item.images.map((url, index) => {
+                        const isFirst = index === 0;
+                        const isLast = index === item.images.length - 1 && item.images.length > 1;
+                        const rotation = isFirst ? -6 : isLast ? 6 : 0;
+                        const leftOffset = index * 10; // Smaller offset for list view
+                        const zIndex = isFirst ? 10 : isLast ? 8 : 9;
+
+                        return (
+                          <div
+                            key={index}
+                            className="absolute rounded-md overflow-hidden bg-slate-100 border border-slate-200 shadow-sm"
+                            style={{
+                              width: '64px',
+                              height: '96px',
+                              left: `${leftOffset}px`,
+                              zIndex: zIndex,
+                              transform: `rotate(${rotation}deg)`,
+                              transformOrigin: 'bottom center',
+                              transition: 'all 0.3s ease'
+                            }}
+                          >
+                            <img
+                              src={url}
+                              alt="template"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        );
+                      })}
                     </div>
                     <div className="flex-1 min-w-0 flex flex-col">
                       <div className="flex justify-between items-start mb-2">
@@ -114,8 +138,6 @@ export function TaskList({ templates, loading, onRefresh }: TaskListProps) {
                           >
                             {item.source === 'gemini-image' ? '图片' : '视频'}
                           </Tag>
-                          <Tag color="green">{item.quality}</Tag>
-                          <Tag color="orange">{item.aspectRatio}</Tag>
                         </Space>
                         <Popconfirm
                           title="确定要删除该模板吗？"

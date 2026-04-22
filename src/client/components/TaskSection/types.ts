@@ -1,9 +1,7 @@
 export interface TaskTemplate {
   id: string
-  image: string
+  images: string[]
   prompt: string
-  quality: string
-  aspectRatio: string
   createdAt: number
   source: 'wan-video' | 'gemini-image'
 }

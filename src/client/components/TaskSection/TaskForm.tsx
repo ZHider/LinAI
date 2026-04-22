@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons'
-import { Form, Input, Radio, Select, Button, message, Upload } from 'antd'
+import { Form, Input, Radio, Button, message, Upload } from 'antd'
 
 interface TaskFormProps {
   onSuccess: () => void
@@ -9,10 +9,10 @@ interface TaskFormProps {
 export function TaskForm({ onSuccess }: TaskFormProps) {
   const [form] = Form.useForm()
   const [submitting, setSubmitting] = useState(false)
-  const [imageUrl, setImageUrl] = useState<string>('')
+  const [imageUrls, setImageUrls] = useState<string[]>([])
 
   const handleFinish = async (values: any) => {
-    if (!imageUrl) {
+    if (imageUrls.length === 0) {
       message.warning('请上传图片')
       return
     }
@@ -21,7 +21,7 @@ export function TaskForm({ onSuccess }: TaskFormProps) {
     try {
       const payload = {
         ...values,
-        image: imageUrl
+        images: imageUrls
       }
 
       const res = await fetch('/api/task/templates', {
@@ -34,7 +34,7 @@ export function TaskForm({ onSuccess }: TaskFormProps) {
       if (json.success) {
         message.success('保存成功')
         form.resetFields()
-        setImageUrl('')
+        setImageUrls([])
         onSuccess()
       } else {
         message.error(json.error || '保存失败')
@@ -49,7 +49,7 @@ export function TaskForm({ onSuccess }: TaskFormProps) {
   const handleUpload = (file: File) => {
     const reader = new FileReader()
     reader.onload = (e) => {
-      setImageUrl(e.target?.result as string)
+      setImageUrls((prev) => [...prev, e.target?.result as string])
     }
     reader.readAsDataURL(file)
     return false // 阻止默认上传行为
@@ -65,9 +65,7 @@ export function TaskForm({ onSuccess }: TaskFormProps) {
         layout="vertical"
         onFinish={handleFinish}
         initialValues={{
-          source: 'wan-video',
-          quality: '1080p',
-          aspectRatio: '16:9'
+          source: 'wan-video'
         }}
       >
         <div className="flex gap-4">
@@ -97,19 +95,41 @@ export function TaskForm({ onSuccess }: TaskFormProps) {
             accept="image/*"
             showUploadList={false}
             beforeUpload={handleUpload as any}
+            multiple
           >
-            <Button icon={<UploadOutlined />}>选择图片</Button>
+            <Button icon={<UploadOutlined />}>选择多张图片</Button>
           </Upload>
-          {imageUrl && (
-            <div
-              className="mt-4 rounded-lg overflow-hidden border border-slate-200"
-              style={{ width: '120px', height: '120px' }}
-            >
-              <img
-                src={imageUrl}
-                alt="preview"
-                className="w-full h-full object-cover"
-              />
+          {imageUrls.length > 0 && (
+            <div className="mt-4 relative ml-2" style={{ height: '120px' }}>
+              {imageUrls.map((url, index) => {
+                const isFirst = index === 0;
+                const isLast = index === imageUrls.length - 1 && imageUrls.length > 1;
+                const rotation = isFirst ? -6 : isLast ? 6 : 0;
+                const leftOffset = index * 30;
+                const zIndex = isFirst ? 10 : isLast ? 8 : 9;
+
+                return (
+                  <div
+                    key={index}
+                    className="absolute rounded-lg overflow-hidden border-2 border-white shadow-md bg-slate-100"
+                    style={{
+                      width: '80px',
+                      height: '120px',
+                      left: `${leftOffset}px`,
+                      zIndex: zIndex,
+                      transform: `rotate(${rotation}deg)`,
+                      transformOrigin: 'bottom center',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    <img
+                      src={url}
+                      alt={`preview-${index}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                );
+              })}
             </div>
           )}
         </Form.Item>
@@ -124,36 +144,6 @@ export function TaskForm({ onSuccess }: TaskFormProps) {
             placeholder="请输入生成内容的提示词..."
           />
         </Form.Item>
-
-        <div className="flex gap-4">
-          <Form.Item
-            name="quality"
-            label="画质"
-            className="flex-1"
-            rules={[{ required: true }]}
-          >
-            <Select>
-              <Select.Option value="720p">720p</Select.Option>
-              <Select.Option value="1080p">1080p</Select.Option>
-              <Select.Option value="2k">2K</Select.Option>
-              <Select.Option value="4k">4K</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            name="aspectRatio"
-            label="图片比例"
-            className="flex-1"
-            rules={[{ required: true }]}
-          >
-            <Select>
-              <Select.Option value="16:9">16:9 (横屏)</Select.Option>
-              <Select.Option value="9:16">9:16 (竖屏)</Select.Option>
-              <Select.Option value="1:1">1:1 (正方形)</Select.Option>
-              <Select.Option value="4:3">4:3</Select.Option>
-            </Select>
-          </Form.Item>
-        </div>
 
         <Form.Item className="mb-0 pt-4 border-t border-slate-100">
           <Button
