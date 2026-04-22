@@ -6,8 +6,8 @@ import { WanxBot } from '../module/wan-downloader/index'
 const bot = new WanxBot()
 
 const wanApi = new Hono()
-  .get('/status', (c) => {
-    return c.json(bot.getStatus())
+  .get('/status', async (c) => {
+    return c.json(await bot.getStatus())
   })
   .post('/login', async (c) => {
     try {

@@ -33,10 +33,11 @@ export function TaskFromTemplate({ usageType }: TaskFromTemplateProps) {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
 
   const {
-    data: tasks = [],
+    data = [],
     loading: tasksLoading,
     refresh: fetchTasks
   } = useTasks(usageType)
+  const tasks = data as Task[]
 
   useEffect(() => {
     fetchTemplates()

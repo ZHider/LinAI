@@ -5,26 +5,66 @@ import path from 'path'
 import fs from 'fs-extra'
 import axios from 'axios'
 
-export class AuthManager {
-  private static instance: AuthManager
-  private currentSession: string | null = null
+export class WanAuthManager {
+  private static instance: WanAuthManager
+  private currentSession: string | false | null = null
 
   private constructor() {}
 
-  static getInstance(): AuthManager {
-    if (!AuthManager.instance) {
-      AuthManager.instance = new AuthManager()
+  static getInstance(): WanAuthManager {
+    if (!WanAuthManager.instance) {
+      WanAuthManager.instance = new WanAuthManager()
     }
-    return AuthManager.instance
+    return WanAuthManager.instance
   }
 
-  isLoggedIn(): boolean {
-    return this.currentSession !== null
+  async isWanLoggedIn(): Promise<boolean> {
+    if (this.currentSession === null) {
+      await this.readSessionCookie()
+    }
+    return !!this.currentSession
+  }
+
+  private async readSessionCookie(): Promise<void> {
+    const userDataDir = path.resolve(config.USER_DATA_DIR)
+    fs.ensureDirSync(userDataDir)
+
+    const context = await chromium.launchPersistentContext(userDataDir, {
+      headless: true
+    })
+
+    try {
+      const page = await context.newPage()
+      // 访问官网，这会自动刷新 Cookie
+      await page.goto(config.EXPLORE_URL, {
+        waitUntil: 'domcontentloaded',
+        timeout: 10000
+      })
+
+      const cookies = await context.cookies()
+      const sessionCookie = cookies.find((c) => c.name === 'WANX_CN_SESSION')
+
+      if (sessionCookie) {
+        this.currentSession = sessionCookie.value
+      } else {
+        this.currentSession = false
+      }
+      await context.close()
+    } catch (error: any) {
+      logger.error('❌ 读取 session cookie 失败:', error.message)
+      this.currentSession = false
+      await context.close()
+    }
   }
 
   async getSessionToken(): Promise<string> {
+    if (this.currentSession === null) {
+      await this.readSessionCookie()
+    }
+
     if (
       this.currentSession &&
+      typeof this.currentSession === 'string' &&
       (await this.validateSession(this.currentSession))
     ) {
       return this.currentSession
@@ -62,47 +102,24 @@ export class AuthManager {
    */
   async refreshSession(): Promise<string> {
     logger.info('🔄 正在刷新 session 凭证...')
-    const userDataDir = path.resolve(config.USER_DATA_DIR)
-    fs.ensureDirSync(userDataDir)
 
-    const context = await chromium.launchPersistentContext(userDataDir, {
-      headless: true
-    })
+    await this.readSessionCookie()
 
-    try {
-      const page = await context.newPage()
-      // 访问官网，这会自动刷新 Cookie
-      await page.goto(config.EXPLORE_URL, {
-        waitUntil: 'domcontentloaded',
-        timeout: 10000
-      })
-
-      const cookies = await context.cookies()
-      const sessionCookie = cookies.find((c) => c.name === 'WANX_CN_SESSION')
-
-      if (!sessionCookie) {
-        logger.warn('⚠️ 未发现 WANX_CN_SESSION，尝试引导用户登录...')
-        await context.close()
-        return await this.manualLogin()
-      }
-
-      // 验证获取到的 Cookie 是否有效
-      const isValid = await this.validateSession(sessionCookie.value)
-      if (!isValid) {
-        logger.warn('⚠️ 发现 WANX_CN_SESSION 但已失效，尝试引导用户登录...')
-        await context.close()
-        return await this.manualLogin()
-      }
-
-      this.currentSession = sessionCookie.value
-      logger.info('✅ Session 刷新并验证成功')
-      await context.close()
-      return this.currentSession
-    } catch (error: any) {
-      logger.error('❌ 刷新 session 失败:', error.message)
-      await context.close()
-      throw error
+    if (!this.currentSession || typeof this.currentSession !== 'string') {
+      logger.warn('⚠️ 未发现有效的 WANX_CN_SESSION，尝试引导用户登录...')
+      return await this.manualLogin()
     }
+
+    // 验证获取到的 Cookie 是否有效
+    const isValid = await this.validateSession(this.currentSession)
+    if (!isValid) {
+      logger.warn('⚠️ 发现 WANX_CN_SESSION 但已失效，尝试引导用户登录...')
+      this.currentSession = false
+      return await this.manualLogin()
+    }
+
+    logger.info('✅ Session 刷新并验证成功')
+    return this.currentSession
   }
 
   /**
@@ -154,4 +171,4 @@ export class AuthManager {
   }
 }
 
-export const authManager = AuthManager.getInstance()
+export const wanAuthManager = WanAuthManager.getInstance()

@@ -2,7 +2,7 @@ import { WanxClient } from './api'
 import { Downloader } from './downloader'
 import { config } from './config'
 import { logger } from '../utils/logger'
-import { authManager } from './auth'
+import { wanAuthManager } from './auth'
 
 export class WanxBot {
   private client: WanxClient
@@ -17,9 +17,9 @@ export class WanxBot {
     this.startTime = config.START_TIME
   }
 
-  public getStatus() {
+  public async getStatus() {
     return {
-      isLoggedIn: authManager.isLoggedIn(),
+      isLoggedIn: await wanAuthManager.isWanLoggedIn(),
       autoSubmit: this.isRunning,
       errorMsg: this.currentError
     }
@@ -29,7 +29,7 @@ export class WanxBot {
     this.currentError = ''
     logger.info('🔑 正在初始化身份认证...')
     try {
-      await authManager.getSessionToken()
+      await wanAuthManager.getSessionToken()
     } catch (error: any) {
       logger.error('❌ 身份认证失败:', error.message)
       this.currentError = error.message
@@ -52,7 +52,8 @@ export class WanxBot {
       `📅 设置的开始时间: ${new Date(this.startTime).toLocaleString()}`
     )
 
-    if (!authManager.isLoggedIn()) {
+    const loggedIn = await wanAuthManager.isWanLoggedIn()
+    if (!loggedIn) {
       try {
         await this.login()
       } catch (error) {

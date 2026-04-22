@@ -2,11 +2,11 @@ import axios from 'axios'
 import { config } from './config'
 import type { PagingListResponse, ImageGenResponse } from './types'
 import { logger } from '../utils/logger'
-import { authManager } from './auth'
+import { wanAuthManager } from './auth'
 
 export class WanxClient {
   private async getHeaders() {
-    const session = await authManager.getSessionToken()
+    const session = await wanAuthManager.getSessionToken()
     return {
       'content-type': 'application/json',
       Cookie: `WANX_CN_SESSION=${session}`
@@ -25,7 +25,7 @@ export class WanxClient {
     } catch (error: any) {
       if (error.response?.status === 401) {
         logger.warn('⚠️ 凭证已失效，尝试刷新...')
-        await authManager.refreshSession()
+        await wanAuthManager.refreshSession()
         return this.getTaskList(pageSize)
       }
       logger.error('❌ 获取任务列表失败:', error.message)
@@ -45,7 +45,7 @@ export class WanxClient {
     } catch (error: any) {
       if (error.response?.status === 401) {
         logger.warn('⚠️ 凭证已失效，尝试刷新...')
-        await authManager.refreshSession()
+        await wanAuthManager.refreshSession()
         return this.submitTask()
       }
       if (error.response && error.response.status === 429) {
