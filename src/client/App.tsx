@@ -1,5 +1,6 @@
 import { WanPreview } from './components/WanSection/WanPreview'
 import { GeminiSection } from './components/GeminiSection'
+import { GPTImagePreview } from './components/GPTImageSection/GPTImagePreview'
 import { TemplateSection } from './components/TemplateSection'
 import { ThunderboltOutlined } from '@ant-design/icons'
 
@@ -34,6 +35,7 @@ function App() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <WanPreview />
             <GeminiSection />
+            <GPTImagePreview />
             {/* 未来可以在这里添加更多卡片 */}
           </div>
         </section>

@@ -6,6 +6,7 @@ import geminiApi from './api/gemini'
 import taskApi from './api/task'
 import templateApi from './api/template'
 import logApi from './api/log'
+import gptImageApi from './api/gptImage'
 
 const app = new Hono()
 
@@ -15,6 +16,7 @@ const routes = app
   .route('/api/task', taskApi)
   .route('/api/template', templateApi)
   .route('/api/log', logApi)
+  .route('/api/gptImage', gptImageApi)
 export type AppType = typeof routes
 
 const port = 3000
