@@ -32,14 +32,38 @@ interface GPTImageResponse {
 interface GenerateGPTImageOptions {
   apiKey: string
   prompt: string
-  size?: '1k' | '2k'
+  size: string
   quality?: 'low' | 'medium' | 'high'
+}
+
+function calculateSize(aspectRatio: string, baseSize: 1024 | 2048): string {
+  const [wStr, hStr] = aspectRatio.split(':')
+  const wRatio = parseInt(wStr, 10)
+  const hRatio = parseInt(hStr, 10)
+
+  if (isNaN(wRatio) || isNaN(hRatio) || hRatio === 0) {
+    return `${baseSize}x${baseSize}`
+  }
+
+  const ratio = wRatio / hRatio
+  let width: number
+  let height: number
+
+  if (ratio >= 1) {
+    height = baseSize
+    width = Math.round((baseSize * ratio) / 16) * 16
+  } else {
+    width = baseSize
+    height = Math.round((baseSize / ratio) / 16) * 16
+  }
+
+  return `${width}x${height}`
 }
 
 async function generateGPTImage(
   options: GenerateGPTImageOptions
 ): Promise<string> {
-  const { apiKey, prompt, size = '1k', quality = 'medium' } = options
+  const { apiKey, prompt, size, quality = 'medium' } = options
 
   const response = await fetch('https://ai.t8star.cn/v1/images/generations', {
     method: 'POST',
@@ -50,7 +74,7 @@ async function generateGPTImage(
     body: JSON.stringify({
       model: 'gpt-image-2',
       prompt: prompt,
-      size: size === '2k' ? '2048x2048' : '1024x1024',
+      size: size,
       quality: quality
     })
   })
@@ -81,13 +105,12 @@ const gptImageApi = new Hono()
       z.object({
         apiKey: z.string().min(1, 'API Key is required'),
         templateId: z.string().min(1, 'Template ID is required'),
-        size: z.enum(['1k', '2k']).optional().default('1k'),
         quality: z.enum(['low', 'medium', 'high']).optional().default('medium')
       })
     ),
     async (c) => {
       try {
-        const { apiKey, templateId, size, quality } = c.req.valid('json')
+        const { apiKey, templateId, quality } = c.req.valid('json')
 
         const templates = await templateManager.getTemplates()
         const template = templates.find((t) => t.id === templateId)
@@ -98,12 +121,14 @@ const gptImageApi = new Hono()
 
         logger.info('Generating GPT image for template ' + templateId)
 
+        const finalSize = calculateSize(template.aspectRatio || '1:1', 2048)
+
         let imageUrl: string
         try {
           imageUrl = await generateGPTImage({
             apiKey,
             prompt: template.prompt,
-            size,
+            size: finalSize,
             quality
           })
         } catch (err: any) {
@@ -125,20 +150,24 @@ const gptImageApi = new Hono()
       'json',
       z.object({
         apiKey: z.string().min(1, 'API Key is required'),
-        prompt: z.string().min(1, 'Prompt is required')
+        prompt: z.string().min(1, 'Prompt is required'),
+        aspectRatio: z.string().optional().default('1:1')
       })
     ),
     async (c) => {
       try {
-        const { apiKey, prompt } = c.req.valid('json')
+        const { apiKey, prompt, aspectRatio } = c.req.valid('json')
 
         logger.info('Generating GPT trial image for prompt')
+
+        const finalSize = calculateSize(aspectRatio, 1024)
 
         let imageUrl: string
         try {
           imageUrl = await generateGPTImage({
             apiKey,
             prompt,
+            size: finalSize,
             quality: 'low'
           })
         } catch (err: any) {

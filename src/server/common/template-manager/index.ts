@@ -11,6 +11,7 @@ export interface TaskTemplate {
   prompt: string
   createdAt: number
   usageType: 'image' | 'video'
+  aspectRatio?: string
 }
 
 export interface GeminiTaskTemplate extends TaskTemplate {

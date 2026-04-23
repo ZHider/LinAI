@@ -1,8 +1,6 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
-import fs from 'fs-extra'
-import path from 'path'
 import { TemplateManager } from '../common/template-manager'
 
 export const templateManager = new TemplateManager()
@@ -24,7 +22,8 @@ const templateApi = new Hono()
         title: z.string().optional(),
         images: z.array(z.string()),
         prompt: z.string(),
-        usageType: z.enum(['image', 'video'])
+        usageType: z.enum(['image', 'video']),
+        aspectRatio: z.string().optional()
       })
     ),
     async (c) => {

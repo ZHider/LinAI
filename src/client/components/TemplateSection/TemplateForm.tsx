@@ -12,7 +12,8 @@ import {
   message,
   Upload,
   Tooltip,
-  Image
+  Image,
+  Select
 } from 'antd'
 import { hc } from 'hono/client'
 import type { AppType } from '../../../server'
@@ -41,6 +42,7 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
       message.warning('请先填写提示词')
       return
     }
+    const aspectRatio = form.getFieldValue('aspectRatio') || '1:1'
 
     setTrialGenerating(true)
     setTrialImage(null)
@@ -48,7 +50,8 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
       const res = await client.api.gptImage.trial.$post({
         json: {
           apiKey,
-          prompt
+          prompt,
+          aspectRatio
         }
       })
       const data = await res.json()
@@ -131,7 +134,8 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
         layout="vertical"
         onFinish={handleFinish}
         initialValues={{
-          usageType: 'video'
+          usageType: 'video',
+          aspectRatio: '1:1'
         }}
       >
         <div className="flex gap-4">
@@ -153,6 +157,27 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
                 图片生成
               </Radio.Button>
             </Radio.Group>
+          </Form.Item>
+
+          <Form.Item
+            name="aspectRatio"
+            label="比例"
+            className="w-1/3"
+            rules={[{ required: true, message: '请选择比例' }]}
+          >
+            <Select
+              options={[
+                { label: '21:9', value: '21:9' },
+                { label: '2:1', value: '2:1' },
+                { label: '16:9', value: '16:9' },
+                { label: '4:3', value: '4:3' },
+                { label: '1:1', value: '1:1' },
+                { label: '3:4', value: '3:4' },
+                { label: '9:16', value: '9:16' },
+                { label: '1:2', value: '1:2' },
+                { label: '9:21', value: '9:21' }
+              ]}
+            />
           </Form.Item>
         </div>
 
