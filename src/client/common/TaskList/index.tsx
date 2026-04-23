@@ -1,38 +1,21 @@
 import { useEffect, useState } from 'react'
-import {
-  Card,
-  Table,
-  Tag,
-  Typography,
-  Button,
-  message,
-  Modal,
-  Checkbox,
-  Image
-} from 'antd'
+import { Card, Table, Tag, Typography, Button, Image, Tooltip } from 'antd'
 import {
   SyncOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
-  ClockCircleOutlined,
-  DeleteOutlined
+  ClockCircleOutlined
 } from '@ant-design/icons'
 import { hc } from 'hono/client'
-import { useLocalStorageState } from 'ahooks'
 import type { AppType } from '../../../server'
 import type { Task } from '../../../server/common/task-manager'
+import { DeleteTaskButton } from './DeleteTaskButton'
 
 const client = hc<AppType>('/')
 
 export function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(false)
-  const [skipDeleteConfirm, setSkipDeleteConfirm] = useLocalStorageState(
-    'skipDeleteTaskConfirm',
-    {
-      defaultValue: false
-    }
-  )
 
   const fetchTasks = async () => {
     setLoading(true)
@@ -69,57 +52,6 @@ export function TaskList() {
     const timer = setInterval(fetchTasks, 5000)
     return () => clearInterval(timer)
   }, [])
-
-  const doDelete = async (id: string, usageType: 'image' | 'video') => {
-    try {
-      const res = await client.api.task[':usageType'][':id'].$delete({
-        param: { usageType, id }
-      })
-      const json = await res.json()
-      if (json.success) {
-        message.success('删除成功')
-        fetchTasks()
-      } else {
-        message.error(json.error || '删除失败')
-      }
-    } catch (error) {
-      message.error('删除失败')
-    }
-  }
-
-  const handleDelete = (id: string, usageType: 'image' | 'video') => {
-    if (skipDeleteConfirm) {
-      doDelete(id, usageType)
-      return
-    }
-
-    let skipNext = false
-
-    Modal.confirm({
-      title: '确认删除任务？',
-      content: (
-        <div>
-          <p>删除任务将同时删除其生成的图片/视频文件，且不可恢复。</p>
-          <Checkbox
-            onChange={(e) => {
-              skipNext = e.target.checked
-            }}
-          >
-            下次不再提醒
-          </Checkbox>
-        </div>
-      ),
-      okText: '确认删除',
-      okType: 'danger',
-      cancelText: '取消',
-      onOk: () => {
-        if (skipNext) {
-          setSkipDeleteConfirm(true)
-        }
-        doDelete(id, usageType)
-      }
-    })
-  }
 
   const columns = [
     {
@@ -188,7 +120,22 @@ export function TaskList() {
           const cost =
             ((20 / 1000000) * inputTokens + (120 / 1000000) * outputTokens) *
             1.4
-          return `￥${cost.toFixed(4)}`
+
+          const tooltipContent = (
+            <div>
+              <div>输入 tokens: {inputTokens}</div>
+              <div>输出 tokens: {outputTokens}</div>
+              <div>预估费用: ￥{cost.toFixed(4)}</div>
+            </div>
+          )
+
+          return (
+            <Tooltip title={tooltipContent}>
+              <span style={{ cursor: 'help', borderBottom: '1px dashed #ccc' }}>
+                ￥{cost.toFixed(2)}
+              </span>
+            </Tooltip>
+          )
         }
         return '-'
       },
@@ -232,16 +179,10 @@ export function TaskList() {
       title: '操作',
       key: 'action',
       render: (_: any, record: Task) => (
-        <Button
-          type="text"
-          danger
-          icon={<DeleteOutlined />}
-          onClick={() =>
-            handleDelete(
-              record.id,
-              record.rawTemplate?.usageType as 'image' | 'video'
-            )
-          }
+        <DeleteTaskButton
+          id={record.id}
+          usageType={record.rawTemplate?.usageType as 'image' | 'video'}
+          onSuccess={fetchTasks}
         />
       ),
       width: 80

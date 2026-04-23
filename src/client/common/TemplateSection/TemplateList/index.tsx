@@ -1,14 +1,10 @@
 import { useState, forwardRef, useImperativeHandle } from 'react'
-import {
-  InboxOutlined,
-  DeleteOutlined,
-  ArrowLeftOutlined
-} from '@ant-design/icons'
-import { Card, message, Spin, Tag, Space, Popconfirm, Button } from 'antd'
+import { message, Spin } from 'antd'
 import { hc } from 'hono/client'
 import type { AppType } from '../../../../server'
 import { useTemplates } from '../../../hooks/useTemplates'
-import { ImageGroup } from './ImageGroup'
+import { TemplateFolder } from './TemplateFolder'
+import { TemplateItemList } from './TemplateItemList'
 
 const client = hc<AppType>('/')
 
@@ -50,24 +46,11 @@ export const TemplateList = forwardRef<TemplateListRef, unknown>((_, ref) => {
       ).length
 
       return (
-        <div className="grid grid-cols-2 gap-4 h-full content-start mt-2">
-          <Card
-            hoverable
-            onClick={() => setSelectedSource('video')}
-            className="text-center cursor-pointer border-emerald-100 hover:border-emerald-300 transition-colors"
-          >
-            <div className="text-xl font-bold mb-2 text-emerald-600">视频</div>
-            <div className="text-slate-500">{wanCount} 个模板</div>
-          </Card>
-          <Card
-            hoverable
-            onClick={() => setSelectedSource('image')}
-            className="text-center cursor-pointer border-blue-100 hover:border-blue-300 transition-colors"
-          >
-            <div className="text-xl font-bold mb-2 text-blue-600">图片</div>
-            <div className="text-slate-500">{geminiCount} 个模板</div>
-          </Card>
-        </div>
+        <TemplateFolder
+          wanCount={wanCount}
+          geminiCount={geminiCount}
+          onSelect={setSelectedSource}
+        />
       )
     }
 
@@ -76,90 +59,12 @@ export const TemplateList = forwardRef<TemplateListRef, unknown>((_, ref) => {
     )
 
     return (
-      <div className="flex flex-col h-full">
-        <div className="flex items-center gap-2 mb-4">
-          <Button
-            type="text"
-            icon={<ArrowLeftOutlined />}
-            onClick={() => setSelectedSource(null)}
-            className="text-slate-500 hover:text-slate-800 -ml-2"
-          />
-          <h4 className="text-md font-medium text-slate-800 m-0">
-            {selectedSource === 'video' ? '视频' : '图片'} 模板 (
-            {filteredTemplates.length})
-          </h4>
-        </div>
-
-        <div
-          className="flex-1 overflow-y-auto pr-2"
-          style={{ maxHeight: '550px' }}
-        >
-          {filteredTemplates.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-slate-400 space-y-4 border-2 border-dashed border-slate-100 rounded-xl bg-slate-50/50">
-              <InboxOutlined className="text-5xl text-slate-300" />
-              <p className="text-sm font-medium">该分类下暂无模板内容</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredTemplates.map((item) => (
-                <Card
-                  key={item.id}
-                  size="small"
-                  className="shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <div className="flex gap-4">
-                    <ImageGroup images={item.images || []} />
-                    <div className="flex-1 min-w-0 flex flex-col">
-                      <div className="flex justify-between items-start mb-2">
-                        <Space size={[0, 4]} wrap>
-                          <Tag
-                            color={
-                              item.usageType === 'image' ? 'blue' : 'purple'
-                            }
-                          >
-                            {item.usageType === 'image' ? '图片' : '视频'}
-                          </Tag>
-                        </Space>
-                        <Popconfirm
-                          title="确定要删除该模板吗？"
-                          onConfirm={() => handleDelete(item.id)}
-                          okText="确定"
-                          cancelText="取消"
-                          okButtonProps={{ danger: true }}
-                        >
-                          <Button
-                            type="text"
-                            danger
-                            icon={<DeleteOutlined />}
-                            size="small"
-                          />
-                        </Popconfirm>
-                      </div>
-                      {item.title && (
-                        <div
-                          className="font-bold text-slate-800 mb-1 truncate"
-                          title={item.title}
-                        >
-                          {item.title}
-                        </div>
-                      )}
-                      <p
-                        className="text-sm text-slate-600 line-clamp-2 mt-1"
-                        title={item.prompt}
-                      >
-                        {item.prompt}
-                      </p>
-                      <div className="mt-auto text-xs text-slate-400">
-                        {new Date(item.createdAt).toLocaleString()}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+      <TemplateItemList
+        selectedSource={selectedSource}
+        filteredTemplates={filteredTemplates}
+        onBack={() => setSelectedSource(null)}
+        onDelete={handleDelete}
+      />
     )
   }
 

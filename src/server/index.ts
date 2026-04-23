@@ -6,7 +6,7 @@ import geminiApi from './api/gemini'
 import taskApi from './api/common/task'
 import templateApi from './api/common/template'
 import logApi from './api/common/log'
-import gptImageApi from './api/gptImage'
+import gptImageApi from './api/gpt-image'
 import staticApi from './api/common/static'
 
 const app = new Hono()
