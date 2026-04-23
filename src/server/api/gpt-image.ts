@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { templateManager } from '../common/template-manager'
 import { TaskTemplate } from '../common/template-manager'
 import { handleImageGeneration } from '../common/gpt-image'
+import { getConfig } from '../common/config'
 
 const gptImageApi = new Hono()
   .post(
@@ -12,13 +13,20 @@ const gptImageApi = new Hono()
     zValidator(
       'json',
       z.object({
-        apiKey: z.string().min(1, 'API Key is required'),
         templateId: z.string().min(1, 'Template ID is required'),
         size: z.enum(['1k', '2k']).optional().default('2k')
       })
     ),
     async (c) => {
-      const { apiKey, templateId, size } = c.req.valid('json')
+      const { templateId, size } = c.req.valid('json')
+      const config = getConfig()
+      const apiKey = config.gptImageApiKey
+      if (!apiKey) {
+        return c.json(
+          { success: false as const, error: 'API Key is not configured' },
+          400
+        )
+      }
       const templates = await templateManager.getTemplates()
       const template = templates.find((t) => t.id === templateId)
       if (!template) {
@@ -40,14 +48,21 @@ const gptImageApi = new Hono()
     zValidator(
       'json',
       z.object({
-        apiKey: z.string().min(1, 'API Key is required'),
         prompt: z.string().min(1, 'Prompt is required'),
         aspectRatio: z.string().optional().default('1:1'),
         images: z.array(z.string()).optional()
       })
     ),
     async (c) => {
-      const { apiKey, prompt, aspectRatio, images } = c.req.valid('json')
+      const { prompt, aspectRatio, images } = c.req.valid('json')
+      const config = getConfig()
+      const apiKey = config.gptImageApiKey
+      if (!apiKey) {
+        return c.json(
+          { success: false as const, error: 'API Key is not configured' },
+          400
+        )
+      }
       const template: TaskTemplate = {
         id: uuidv4(),
         createdAt: Date.now(),

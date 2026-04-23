@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { WanPreview } from './module/WanSection/WanPreview'
 import { GPTImagePreview } from './module/GPTImageSection/GPTImagePreview'
 import { TemplateSection } from './common/TemplateSection'
@@ -5,8 +6,13 @@ import { TaskList } from './common/TaskList'
 import { ScheduleOutlined } from '@ant-design/icons'
 import { ThunderboltOutlined } from '@ant-design/icons'
 import { Header } from './common/Header'
+import { useGlobalStore } from './store/global'
 
 function App() {
+  useEffect(() => {
+    useGlobalStore.getState().fetchConfig()
+  }, [])
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
       <Header />

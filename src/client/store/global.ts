@@ -1,20 +1,39 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { hc } from 'hono/client'
+import type { AppType } from '../../server'
+
+const client = hc<AppType>('/')
 
 interface GlobalState {
   gptImageApiKey: string | null
-  setGptImageApiKey: (key: string | null) => void
+  setGptImageApiKey: (key: string | null) => Promise<void>
+  fetchConfig: () => Promise<void>
 }
 
-export const useGlobalStore = create<GlobalState>()(
-  persist(
-    (set) => ({
-      gptImageApiKey: null,
-      setGptImageApiKey: (key) => set({ gptImageApiKey: key })
-    }),
-    {
-      name: 'global-storage',
-      partialize: (state) => ({ gptImageApiKey: state.gptImageApiKey })
+export const useGlobalStore = create<GlobalState>()((set) => ({
+  gptImageApiKey: null,
+  setGptImageApiKey: async (key) => {
+    try {
+      const res = await client.api.config.$post({
+        json: { gptImageApiKey: key }
+      })
+      const json = await res.json()
+      if (json.success) {
+        set({ gptImageApiKey: json.data.gptImageApiKey })
+      }
+    } catch (error) {
+      console.error('Failed to update config', error)
     }
-  )
-)
+  },
+  fetchConfig: async () => {
+    try {
+      const res = await client.api.config.$get()
+      const json = await res.json()
+      if (json.success) {
+        set({ gptImageApiKey: json.data.gptImageApiKey })
+      }
+    } catch (error) {
+      console.error('Failed to fetch config', error)
+    }
+  }
+}))

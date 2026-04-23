@@ -39,7 +39,7 @@ export function openSettingModal(options?: {
             message.warning('请输入 API Key')
             return
           }
-          setGptImageApiKey(values.apiKey)
+          await setGptImageApiKey(values.apiKey)
           message.success('API Key 保存成功')
           options?.onSuccess?.(values.apiKey)
         }

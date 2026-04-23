@@ -30,7 +30,7 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
   const [trialImage, setTrialImage] = useState<string | null>(null)
   const gptImageApiKey = useGlobalStore((state) => state.gptImageApiKey)
 
-  const doTrial = async (apiKey: string) => {
+  const doTrial = async () => {
     const prompt = form.getFieldValue('prompt')
     if (!prompt) {
       message.warning('请先填写提示词')
@@ -43,7 +43,6 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
     try {
       const res = await client.api.gptImage.trial.$post({
         json: {
-          apiKey,
           prompt,
           aspectRatio,
           images: imageUrls
@@ -74,14 +73,14 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
     if (!apiKey) {
       openSettingModal({
         initialTab: 'gpt-image',
-        onSuccess: (key) => {
-          doTrial(key)
+        onSuccess: () => {
+          doTrial()
         },
       })
       return
     }
 
-    doTrial(apiKey)
+    doTrial()
   }
 
   const handleFinish = async (values: any) => {

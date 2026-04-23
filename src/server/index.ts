@@ -8,6 +8,7 @@ import templateApi from './api/common/template'
 import logApi from './api/common/log'
 import gptImageApi from './api/gpt-image'
 import staticApi from './api/common/static'
+import configApi from './api/common/config'
 
 const app = new Hono()
 
@@ -21,6 +22,7 @@ const routes = app
   .route('/api/template', templateApi)
   .route('/api/log', logApi)
   .route('/api/static', staticApi)
+  .route('/api/config', configApi)
 export type AppType = typeof routes
 
 const port = 3000

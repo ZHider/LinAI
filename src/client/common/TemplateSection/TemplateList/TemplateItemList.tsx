@@ -31,18 +31,13 @@ export function TemplateItemList({
   const gptImageApiKey = useGlobalStore((state) => state.gptImageApiKey)
   const { refresh } = useTasks()
 
-  const doGenerate = async (
-    apiKey: string,
-    templateId: string,
-    size: '1k' | '2k'
-  ) => {
+  const doGenerate = async (templateId: string, size: '1k' | '2k') => {
     message.success('任务提交成功')
     // give server some time to create the task
     setTimeout(() => refresh(), 500)
     try {
       const res = await client.api.gptImage.generate.$post({
         json: {
-          apiKey,
           templateId,
           size
         }
@@ -65,14 +60,14 @@ export function TemplateItemList({
     if (!apiKey) {
       openSettingModal({
         initialTab: 'gpt-image',
-        onSuccess: (key) => {
-          doGenerate(key, templateId, size)
+        onSuccess: () => {
+          doGenerate(templateId, size)
         }
       })
       return
     }
 
-    doGenerate(apiKey, templateId, size)
+    doGenerate(templateId, size)
   }
 
   return (
