@@ -3,7 +3,7 @@ import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import fs from 'fs-extra'
 import path from 'path'
-import { TaskManager } from '../common/task-manager'
+import { TaskManager } from '../../common/task-manager'
 
 export const taskManager = new TaskManager()
 const taskApi = new Hono()

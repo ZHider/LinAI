@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
-import { TemplateManager } from '../common/template-manager'
+import { TemplateManager } from '../../common/template-manager'
 
 export const templateManager = new TemplateManager()
 const templateApi = new Hono()
