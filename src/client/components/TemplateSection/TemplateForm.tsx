@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLocalStorageState } from 'ahooks'
 import {
   PlusOutlined,
   UploadOutlined,
@@ -30,6 +31,11 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
   const [form] = Form.useForm()
   const [submitting, setSubmitting] = useState(false)
   const [imageUrls, setImageUrls] = useState<string[]>([])
+  const [localUsageType, setLocalUsageType] = useLocalStorageState<
+    'image' | 'video'
+  >('template-usage-type', {
+    defaultValue: 'image'
+  })
   const usageType = Form.useWatch('usageType', form)
   const [trialGenerating, setTrialGenerating] = useState(false)
   const [trialImage, setTrialImage] = useState<string | null>(null)
@@ -85,11 +91,6 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
   }
 
   const handleFinish = async (values: any) => {
-    if (imageUrls.length === 0) {
-      message.warning('请上传图片')
-      return
-    }
-
     setSubmitting(true)
     try {
       const payload = {
@@ -134,29 +135,37 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
         layout="vertical"
         onFinish={handleFinish}
         initialValues={{
-          usageType: 'video',
+          usageType: localUsageType,
           aspectRatio: '1:1'
         }}
+        onValuesChange={(changedValues) => {
+          if (changedValues.usageType) {
+            setLocalUsageType(changedValues.usageType)
+          }
+        }}
       >
-        <div className="flex gap-4">
-          <Form.Item
-            name="usageType"
-            label="模板用途"
-            className="flex-1"
-            rules={[{ required: true }]}
+        <Form.Item
+          name="usageType"
+          label="模板用途"
+          rules={[{ required: true }]}
+        >
+          <Radio.Group
+            optionType="button"
+            buttonStyle="solid"
+            className="w-full flex"
           >
-            <Radio.Group
-              optionType="button"
-              buttonStyle="solid"
-              className="w-full flex"
-            >
-              <Radio.Button value="video" className="flex-1 text-center">
-                视频生成
-              </Radio.Button>
-              <Radio.Button value="image" className="flex-1 text-center">
-                图片生成
-              </Radio.Button>
-            </Radio.Group>
+            <Radio.Button value="image" className="flex-1 text-center">
+              图片生成
+            </Radio.Button>
+            <Radio.Button value="video" className="flex-1 text-center">
+              视频生成
+            </Radio.Button>
+          </Radio.Group>
+        </Form.Item>
+
+        <div className="flex gap-4">
+          <Form.Item name="title" label="（可选）标题" className="flex-1">
+            <Input placeholder="请输入模板标题..." />
           </Form.Item>
 
           <Form.Item
@@ -181,7 +190,7 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
           </Form.Item>
         </div>
 
-        <Form.Item label="上传图片" required>
+        <Form.Item label="上传图片">
           <Upload
             accept="image/*"
             showUploadList={false}
@@ -207,10 +216,6 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
               ))}
             </div>
           )}
-        </Form.Item>
-
-        <Form.Item name="title" label="标题（可选）">
-          <Input placeholder="请输入模板标题..." />
         </Form.Item>
 
         <Form.Item

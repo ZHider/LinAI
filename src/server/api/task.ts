@@ -24,17 +24,17 @@ const taskApi = new Hono()
   .post(
     '/:usageType/from-template',
     zValidator('param', z.object({ usageType: z.enum(['image', 'video']) })),
-    zValidator('json', z.object({ templateId: z.string().min(1, 'templateId is required') })),
+    zValidator('json', z.object({ templateId: z.string().min(1, 'templateId is required'), source: z.string().optional().default('unknown') })),
     async (c) => {
       const { usageType } = c.req.valid('param')
       try {
-        const { templateId } = c.req.valid('json')
-        const newTask = await taskManager.createTaskFromTemplate(templateId)
+        const { templateId, source } = c.req.valid('json')
+        const newTask = await taskManager.createTaskFromTemplate(templateId, source)
         if (!newTask) {
           return c.json({ success: false as const, error: 'Template not found' }, 404)
         }
         // Since it's created for this module, ensure usageType matches.
-        if (newTask.usageType !== usageType) {
+        if (newTask.rawTemplate?.usageType !== usageType) {
           // Assuming the frontend passes a templateId that matches the module.
         }
         return c.json({ success: true as const, data: newTask })

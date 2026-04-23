@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
+import { taskManager } from './task'
 import { templateManager } from './template'
 import { logger } from '../module/utils/logger'
 import fs from 'fs-extra'
@@ -62,7 +63,7 @@ function calculateSize(aspectRatio: string, baseSize: 1024 | 2048): string {
 
 async function generateGPTImage(
   options: GenerateGPTImageOptions
-): Promise<string> {
+): Promise<{ url: string; usage?: GPTImageResponse['usage'] }> {
   const { apiKey, prompt, size, quality = 'medium' } = options
 
   const response = await fetch('https://ai.t8star.cn/v1/images/generations', {
@@ -90,11 +91,14 @@ async function generateGPTImage(
     throw new Error('No image returned from API')
   }
 
+  let finalUrl = ''
   if (imageResult.b64_json) {
-    return `data:image/png;base64,${imageResult.b64_json.trim()}`
+    finalUrl = `data:image/png;base64,${imageResult.b64_json.trim()}`
+  } else {
+    finalUrl = imageResult.url!.replace(/`/g, '').trim()
   }
 
-  return imageResult.url!.replace(/`/g, '').trim()
+  return { url: finalUrl, usage: data.usage }
 }
 
 const gptImageApi = new Hono()
@@ -121,23 +125,42 @@ const gptImageApi = new Hono()
 
         logger.info('Generating GPT image for template ' + templateId)
 
+        const task = await taskManager.createTaskFromTemplate(templateId, 'gpt-image-2')
+        if (!task) {
+          return c.json({ success: false, error: 'Failed to create task' }, 500)
+        }
+        await taskManager.updateTaskStatus(task.id, 'running')
+        const startTime = Date.now()
+
         const finalSize = calculateSize(template.aspectRatio || '1:1', 2048)
 
         let imageUrl: string
+        let gptTokenUsage: GPTImageResponse['usage'] | undefined
         try {
-          imageUrl = await generateGPTImage({
+          const res = await generateGPTImage({
             apiKey,
             prompt: template.prompt,
             size: finalSize,
             quality
           })
+          imageUrl = res.url
+          gptTokenUsage = res.usage
         } catch (err: any) {
           logger.error('Failed to generate GPT image', err.message)
+          await taskManager.updateTaskStatus(task.id, 'failed', err.message)
           return c.json({ success: false, error: err.message }, 500)
         }
 
+        const duration = Date.now() - startTime
+        await taskManager.updateTask(task.id, {
+          status: 'completed',
+          duration,
+          outputUrl: imageUrl,
+          gptTokenUsage
+        })
+
         logger.info('GPT image generated successfully')
-        return c.json({ success: true, image: imageUrl })
+        return c.json({ success: true, image: imageUrl, taskId: task.id })
       } catch (error: any) {
         logger.error('Failed to generate GPT image', error.message)
         return c.json({ success: false, error: error.message }, 500)
@@ -164,12 +187,13 @@ const gptImageApi = new Hono()
 
         let imageUrl: string
         try {
-          imageUrl = await generateGPTImage({
+          const res = await generateGPTImage({
             apiKey,
             prompt,
             size: finalSize,
             quality: 'low'
           })
+          imageUrl = res.url
         } catch (err: any) {
           logger.error('Failed to generate GPT trial image', err.message)
           return c.json({ success: false as const, error: err.message }, 500)

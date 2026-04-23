@@ -2,6 +2,7 @@ import { WanPreview } from './components/WanSection/WanPreview'
 import { GeminiSection } from './components/GeminiSection'
 import { GPTImagePreview } from './components/GPTImageSection/GPTImagePreview'
 import { TemplateSection } from './components/TemplateSection'
+import { TaskList } from './components/TaskList'
 import { ThunderboltOutlined } from '@ant-design/icons'
 
 function App() {
@@ -32,11 +33,15 @@ function App() {
             </h2>
           </div>
 
+          {/* 单独占一行的任务列表 */}
+          <div className="w-full mt-6">
+            <TaskList />
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <WanPreview />
-            <GeminiSection />
             <GPTImagePreview />
-            {/* 未来可以在这里添加更多卡片 */}
+            <WanPreview />
+            {/* <GeminiSection /> */}
           </div>
         </section>
 

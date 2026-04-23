@@ -3,11 +3,16 @@ import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 import { TaskTemplate, TemplateManager } from '../template-manager'
 
-export interface Task extends Omit<TaskTemplate, 'id'> {
+export interface Task {
   id: string
-  templateId: string
+  rawTemplate: TaskTemplate
+  source: string
   status: 'pending' | 'running' | 'completed' | 'failed'
   error?: string
+  duration?: number
+  outputUrl?: string
+  createdAt: number
+  [key: string]: any
 }
 
 export class TaskManager {
@@ -45,11 +50,12 @@ export class TaskManager {
     usageType: TaskTemplate['usageType']
   ): Promise<Task[]> {
     const tasks = await this.getTasks()
-    return tasks.filter((t) => t.usageType === usageType)
+    return tasks.filter((t) => t.rawTemplate?.usageType === usageType)
   }
 
   public async createTaskFromTemplate(
-    templateId: string
+    templateId: string,
+    source: string
   ): Promise<Task | null> {
     const templates = await this.templateManager.getTemplates()
     const template = templates.find((t) => t.id === templateId)
@@ -59,9 +65,9 @@ export class TaskManager {
 
     const tasks = await this.getTasks()
     const newTask: Task = {
-      ...template,
       id: uuidv4(),
-      templateId: template.id,
+      rawTemplate: template,
+      source,
       status: 'pending',
       createdAt: Date.now()
     }
@@ -85,6 +91,22 @@ export class TaskManager {
     await fs.writeFile(
       this.tasksDbPath,
       JSON.stringify(filtered, null, 2),
+      'utf-8'
+    )
+    return true
+  }
+
+  public async updateTask(id: string, updates: Partial<Task>): Promise<boolean> {
+    const tasks = await this.getTasks()
+    const index = tasks.findIndex((t) => t.id === id)
+    if (index === -1) {
+      return false
+    }
+
+    tasks[index] = { ...tasks[index], ...updates }
+    await fs.writeFile(
+      this.tasksDbPath,
+      JSON.stringify(tasks, null, 2),
       'utf-8'
     )
     return true

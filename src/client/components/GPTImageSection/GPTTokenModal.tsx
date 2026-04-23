@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Modal, Form, Input, Button, message } from 'antd'
+import { Modal, Form, Input, message } from 'antd'
 import { useGlobalStore } from '../../store/global'
 
 interface GPTTokenModalProps {
