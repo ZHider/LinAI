@@ -1,180 +1,132 @@
-import { Card, Table, Tag, Typography, Button, Image, Tooltip } from 'antd'
+import {
+  Card,
+  Tag,
+  Typography,
+  Button,
+  Image,
+  Tooltip,
+  List,
+  message
+} from 'antd'
 import {
   SyncOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
   ClockCircleOutlined,
-  QuestionCircleOutlined
+  RedoOutlined
 } from '@ant-design/icons'
+import { useState } from 'react'
+import { useLocalStorageState } from 'ahooks'
+import { hc } from 'hono/client'
+import type { AppType } from '../../../server'
 import type { Task } from '../../../server/common/task-manager'
 import { useTasks } from '../../hooks/useTasks'
 import {
   GPT_IMAGE_RMB_RATIO,
   useGPTImageQuota
 } from '../../hooks/useGPTImageQuota'
-import { DeleteTaskButton } from './DeleteTaskButton'
+import { DeleteTaskButton } from './DeleteButton'
+import styles from './index.module.scss'
+import { DownloadButton } from './DownloadButton'
+import { TRIAL_TEMPLATE_TITLE } from '../../../server/common/template-manager/enum'
+import { GPT_IMAGE_SOURCE_MODEL } from '../../../server/common/gpt-image/enum'
+
+const client = hc<AppType>('/')
 
 export function TaskList() {
   const { data: tasks = [], loading, refresh: fetchTasks } = useTasks()
   const { quota } = useGPTImageQuota()
+  const [downloadedIds, setDownloadedIds] = useLocalStorageState<string[]>(
+    'downloadedTaskIds',
+    { defaultValue: [] }
+  )
+  const [retryingIds, setRetryingIds] = useState<string[]>([])
 
-  const columns = [
-    {
-      title: '类型',
-      dataIndex: ['rawTemplate', 'usageType'],
-      key: 'usageType',
-      render: (type: string) => (
-        <Tag color={type === 'image' ? 'blue' : 'purple'}>
-          {type === 'image' ? '图片生成' : '视频生成'}
-        </Tag>
-      ),
-      width: 100
-    },
-    {
-      title: '标题',
-      dataIndex: ['rawTemplate', 'title'],
-      key: 'title',
-      render: (text: string) => text || '-'
-    },
-    {
-      title: '状态',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: string) => {
-        if (status === 'completed')
-          return (
-            <Tag icon={<CheckCircleOutlined />} color="success">
-              已完成
-            </Tag>
-          )
-        if (status === 'running')
-          return (
-            <Tag icon={<SyncOutlined spin />} color="processing">
-              运行中
-            </Tag>
-          )
-        if (status === 'failed')
-          return (
-            <Tag icon={<CloseCircleOutlined />} color="error">
-              失败
-            </Tag>
-          )
-        return (
-          <Tag icon={<ClockCircleOutlined />} color="default">
-            等待中
-          </Tag>
-        )
-      },
-      width: 120
-    },
-    {
-      title: () => (
-        <div>
-          耗时
-          <Tooltip
-            title={
-              <div>
-                <div>1k 图：约30~60秒</div>
-                <div>2k 图：约40~80秒</div>
-              </div>
-            }
-          >
-            <QuestionCircleOutlined className="ml-0.5" />
-          </Tooltip>
-        </div>
-      ),
-      dataIndex: 'duration',
-      key: 'duration',
-      render: (duration: number) =>
-        duration ? `${(duration / 1000).toFixed(1)}s` : '-',
-      width: 80
-    },
-    {
-      title: '预估费用',
-      key: 'cost',
-      render: (_: any, record: Task) => {
-        if (record.source === 'gpt-image-2') {
-          if (quota && quota.unlimited_quota === false) {
-            return `单次 ${(0.04 * GPT_IMAGE_RMB_RATIO).toFixed(2)} ￥`
-          }
-          if (record.gptTokenUsage) {
-            const inputTokens = record.gptTokenUsage.input_tokens || 0
-            const outputTokens = record.gptTokenUsage.output_tokens || 0
-            const inputCost = (20 / 1000000) * inputTokens * GPT_IMAGE_RMB_RATIO
-            const outputCost =
-              (120 / 1000000) * outputTokens * GPT_IMAGE_RMB_RATIO
-            const totalCost =
-              Math.ceil(inputCost * 100) / 100 +
-              Math.ceil(outputCost * 100) / 100
-            const cost2str = (cost: number) =>
-              (Math.ceil(cost * 100) / 100).toFixed(2) + ' ￥'
-            const tooltipContent = (
-              <div>
-                <div>输入 tokens: {inputTokens}</div>
-                <div>输入预估费用: {cost2str(inputCost)}</div>
-                <div>输出 tokens: {outputTokens}</div>
-                <div>输出预估费用: {cost2str(outputCost)}</div>
-              </div>
-            )
-
-            return (
-              <Tooltip title={tooltipContent}>
-                <span
-                  style={{ cursor: 'help', borderBottom: '1px dashed #ccc' }}
-                >
-                  {cost2str(totalCost)}
-                </span>
-              </Tooltip>
-            )
-          }
+  const handleRetry = async (task: Task) => {
+    setRetryingIds((prev) => [...prev, task.id])
+    try {
+      const res = await client.api.gptImage.generate.$post({
+        json: {
+          templateId: task.rawTemplate?.id || '',
+          size: '2k'
         }
-        return '-'
-      },
-      width: 100
-    },
-    {
-      title: '结果',
-      dataIndex: 'outputUrl',
-      key: 'outputUrl',
-      render: (outputUrl: string, record: Task) => {
-        if (record.status === 'failed' && record.error) {
-          return (
-            <Typography.Text
-              type="danger"
-              ellipsis={{ tooltip: record.error }}
-              style={{ maxWidth: 200 }}
-            >
-              {record.error}
-            </Typography.Text>
-          )
-        }
-        if (!outputUrl) return '-'
-        if (record.rawTemplate?.usageType === 'image') {
-          return (
-            <Image
-              src={outputUrl}
-              alt="result"
-              height={40}
-              style={{ borderRadius: 4, objectFit: 'cover' }}
-            />
-          )
-        }
-        return (
-          <a href={outputUrl} target="_blank" rel="noreferrer">
-            查看
-          </a>
-        )
-      }
-    },
-    {
-      title: '操作',
-      key: 'action',
-      render: (_: any, record: Task) => (
-        <DeleteTaskButton id={record.id} onSuccess={fetchTasks} />
-      ),
-      width: 80
+      })
+      const json = await res.json()
+      if (json.success === false) throw new Error(json.error)
+      message.success('已创建重试任务')
+      fetchTasks()
+    } catch (err: any) {
+      message.error(`重试失败: ${err.message || '未知错误'}`)
+    } finally {
+      setRetryingIds((prev) => prev.filter((id) => id !== task.id))
     }
-  ]
+  }
+
+  const renderStatus = (status: string) => {
+    if (status === 'completed')
+      return (
+        <Tag icon={<CheckCircleOutlined />} color="success">
+          已完成
+        </Tag>
+      )
+    if (status === 'running')
+      return (
+        <Tag icon={<SyncOutlined spin />} color="processing">
+          运行中
+        </Tag>
+      )
+    if (status === 'failed')
+      return (
+        <Tag icon={<CloseCircleOutlined />} color="error">
+          失败
+        </Tag>
+      )
+    return (
+      <Tag icon={<ClockCircleOutlined />} color="default">
+        等待中
+      </Tag>
+    )
+  }
+
+  const renderCost = (record: Task) => {
+    if (quota && quota.unlimited_quota === false) {
+      return (
+        <Tag color="orange">
+          单次 {(0.04 * GPT_IMAGE_RMB_RATIO).toFixed(2)} ￥
+        </Tag>
+      )
+    }
+    if (record.gptTokenUsage) {
+      const inputTokens = record.gptTokenUsage.input_tokens || 0
+      const outputTokens = record.gptTokenUsage.output_tokens || 0
+      const inputCost = (20 / 1000000) * inputTokens * GPT_IMAGE_RMB_RATIO
+      const outputCost = (120 / 1000000) * outputTokens * GPT_IMAGE_RMB_RATIO
+      const totalCost =
+        Math.ceil(inputCost * 100) / 100 + Math.ceil(outputCost * 100) / 100
+      const cost2str = (cost: number) =>
+        (Math.ceil(cost * 100) / 100).toFixed(2) + ' ￥'
+      const tooltipContent = (
+        <div>
+          <div>输入 tokens: {inputTokens}</div>
+          <div>输入预估费用: {cost2str(inputCost)}</div>
+          <div>输出 tokens: {outputTokens}</div>
+          <div>输出预估费用: {cost2str(outputCost)}</div>
+        </div>
+      )
+
+      return (
+        <Tooltip title={tooltipContent}>
+          <Tag color="orange" style={{ cursor: 'help' }}>
+            {cost2str(totalCost)}
+          </Tag>
+        </Tooltip>
+      )
+    }
+    return null
+  }
+
+  // 暂时仅显示 GPT-Image 任务
+  const gptImageTasks = tasks.filter((t) => t.source === GPT_IMAGE_SOURCE_MODEL)
 
   return (
     <Card
@@ -186,13 +138,121 @@ export function TaskList() {
         </Button>
       }
     >
-      <Table
-        dataSource={tasks}
-        columns={columns}
-        rowKey="id"
-        size="small"
-        pagination={{ pageSize: 10 }}
+      <List
+        className={styles['task-list']}
+        grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 2, xl: 2 }}
+        dataSource={gptImageTasks}
         loading={loading}
+        pagination={{
+          pageSize: 12
+        }}
+        renderItem={(task) => (
+          <List.Item>
+            <Card size="small" className="w-full shadow-sm">
+              <div className="flex gap-4">
+                {/* Left: Image Preview */}
+                <div className="flex-shrink-0 w-28 h-36 relative border border-gray-100 rounded overflow-hidden flex items-center justify-center bg-gray-50">
+                  {task.status === 'failed' && task.error ? (
+                    <Typography.Text
+                      type="danger"
+                      className="text-xs text-center p-2"
+                      ellipsis={{ tooltip: task.error }}
+                    >
+                      {task.error}
+                    </Typography.Text>
+                  ) : !task.outputUrl ? (
+                    <Typography.Text type="secondary" className="text-xs">
+                      暂无图片
+                    </Typography.Text>
+                  ) : (
+                    <Image
+                      src={task.outputUrl}
+                      alt="result"
+                      className="object-cover"
+                      style={{ width: '100%', height: '100%' }}
+                    />
+                  )}
+                </div>
+
+                {/* Right: Info and Actions */}
+                <div className="flex-grow flex flex-col justify-between overflow-hidden min-w-0">
+                  <div>
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      <Tag color="blue">
+                        {task.rawTemplate?.usageType === 'image'
+                          ? '图片生成'
+                          : '视频生成'}
+                      </Tag>
+                      {renderStatus(task.status)}
+                      {renderCost(task)}
+                      {task.duration && (
+                        <Tag>
+                          <ClockCircleOutlined className="mr-1" />
+                          {(task.duration / 1000).toFixed(1)}s
+                        </Tag>
+                      )}
+                      {downloadedIds?.includes(task.id) && (
+                        <Tag color="cyan">已下载</Tag>
+                      )}
+                    </div>
+
+                    {/* Title */}
+                    {task.rawTemplate?.title && (
+                      <Typography.Text
+                        strong
+                        className="block mb-1 truncate"
+                        title={task.rawTemplate.title}
+                      >
+                        {task.rawTemplate.title}
+                      </Typography.Text>
+                    )}
+
+                    {/* Prompt */}
+                    {task.rawTemplate?.prompt && (
+                      <Typography.Paragraph
+                        type="secondary"
+                        className="text-xs mb-0"
+                        ellipsis={{ rows: 2, tooltip: task.rawTemplate.prompt }}
+                      >
+                        {task.rawTemplate.prompt}
+                      </Typography.Paragraph>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex justify-end items-center gap-1 mt-2">
+                    {task.outputUrl && (
+                      <DownloadButton
+                        outputUrl={task.outputUrl}
+                        fileName={
+                          task.rawTemplate?.title || task.rawTemplate.prompt
+                        }
+                        onDownloaded={() => {
+                          if (!downloadedIds?.includes(task.id)) {
+                            setDownloadedIds([
+                              ...(downloadedIds || []),
+                              task.id
+                            ])
+                          }
+                        }}
+                      />
+                    )}
+                    {task.rawTemplate?.title !== TRIAL_TEMPLATE_TITLE && (
+                      <Button
+                        type="text"
+                        icon={<RedoOutlined />}
+                        onClick={() => handleRetry(task)}
+                        loading={retryingIds.includes(task.id)}
+                      />
+                    )}
+                    <DeleteTaskButton id={task.id} onSuccess={fetchTasks} />
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </List.Item>
+        )}
       />
     </Card>
   )

@@ -9,6 +9,7 @@ import {
 import fs from 'fs-extra'
 import path from 'path'
 import crypto from 'crypto'
+import { GPT_IMAGE_SOURCE_MODEL } from './enum'
 
 interface GPTImageResponse {
   created: number
@@ -71,7 +72,7 @@ export async function generateGPTImage(
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: 'gpt-image-2',
+      model: GPT_IMAGE_SOURCE_MODEL,
       prompt: prompt,
       size: size,
       quality: quality,
@@ -113,7 +114,7 @@ export async function handleImageGeneration(options: {
 
     const task = await taskManager.createTaskFromTemplate(
       template,
-      'gpt-image-2'
+      GPT_IMAGE_SOURCE_MODEL
     )
     if (!task) {
       return {

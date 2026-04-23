@@ -6,6 +6,7 @@ import { templateManager } from '../common/template-manager'
 import { TaskTemplate } from '../common/template-manager'
 import { handleImageGeneration } from '../common/gpt-image'
 import { getConfig } from '../common/config'
+import { TRIAL_TEMPLATE_TITLE } from '../common/template-manager/enum'
 
 const gptImageApi = new Hono()
   .post(
@@ -70,7 +71,7 @@ const gptImageApi = new Hono()
         aspectRatio,
         usageType: 'image',
         images: images || [],
-        title: 'Trial Template'
+        title: TRIAL_TEMPLATE_TITLE
       }
       const result = await handleImageGeneration({
         apiKey,
