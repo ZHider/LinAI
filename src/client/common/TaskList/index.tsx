@@ -104,7 +104,21 @@ export function TaskList() {
       width: 120
     },
     {
-      title: '耗时',
+      title: () => (
+        <div>
+          耗时
+          <Tooltip
+            title={
+              <div>
+                <div>1k 图：约20~40秒</div>
+                <div>2k 图：约40~60秒</div>
+              </div>
+            }
+          >
+            <QuestionCircleOutlined className="ml-0.5" />
+          </Tooltip>
+        </div>
+      ),
       dataIndex: 'duration',
       key: 'duration',
       render: (duration: number) =>
@@ -112,7 +126,7 @@ export function TaskList() {
       width: 80
     },
     {
-      title: () => <div>预估费用</div>,
+      title: '预估费用',
       key: 'cost',
       render: (_: any, record: Task) => {
         if (record.source === 'gpt-image-2' && record.gptTokenUsage) {

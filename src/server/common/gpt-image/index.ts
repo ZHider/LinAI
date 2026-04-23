@@ -72,7 +72,7 @@ export async function generateGPTImage(
             size: size,
             quality: quality,
             image: images || []
-        })
+        }),
     })
 
     if (!response.ok) {

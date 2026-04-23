@@ -230,7 +230,7 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
           </div>
         )}
 
-        <Form.Item className="mb-0 pt-4 border-t border-slate-100">
+        <Form.Item className="mb-0! pt-4 border-t border-slate-100">
           <div className="flex gap-4">
             {usageType === 'image' && (
               <Button
