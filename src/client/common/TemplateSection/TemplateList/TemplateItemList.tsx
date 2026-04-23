@@ -12,6 +12,7 @@ import { ImageGroup } from './ImageGroup'
 import { TaskTemplate } from '../../../../server/common/template-manager'
 import { useTasks } from '../../../hooks/useTasks'
 import openaiIcon from '../../../assets/icon/openai.svg'
+import { useGPTImageQuota } from '../../../hooks/useGPTImageQuota'
 
 const client = hc<AppType>('/')
 
@@ -19,17 +20,12 @@ interface TemplateItemListProps {
   selectedSource: 'video' | 'image'
   filteredTemplates: TaskTemplate[]
   onBack: () => void
-  onDelete: (id: string) => void
 }
 
-export function TemplateItemList({
-  selectedSource,
-  filteredTemplates,
-  onBack,
-  onDelete
-}: TemplateItemListProps) {
+const CardHeader = ({ template }: { template: TaskTemplate }) => {
   const gptImageApiKey = useGlobalStore((state) => state.gptImageApiKey)
   const { refresh } = useTasks()
+  const { quota } = useGPTImageQuota()
 
   const doGenerate = async (templateId: string, size: '1k' | '2k') => {
     message.success('任务提交成功')
@@ -70,6 +66,79 @@ export function TemplateItemList({
     doGenerate(templateId, size)
   }
 
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await client.api.template[':id'].$delete({ param: { id } })
+      const json = await res.json()
+      if (json.success) {
+        message.success('删除成功')
+        refresh()
+      } else {
+        message.error(json.error || '删除失败')
+      }
+    } catch (error) {
+      message.error('请求失败')
+    }
+  }
+
+  return (
+    <div className="flex justify-between items-center mb-2">
+      <Tag color={template.usageType === 'image' ? 'blue' : 'purple'}>
+        {template.usageType === 'image' ? '图片' : '视频'}
+      </Tag>
+      <Space size={8} className="flex-nowrap">
+        {template.usageType === 'image' && (
+          <>
+            {quota?.unlimited_quota ? (
+              <>
+                <Button
+                  type="text"
+                  className="text-slate-500 hover:text-purple-600 hover:bg-purple-50 flex items-center justify-center"
+                  icon={<img src={openaiIcon} className="w-4 h-4 opacity-70" />}
+                  onClick={() => handleGenerate(template.id, '1k')}
+                >
+                  1K
+                </Button>
+                <Button
+                  type="text"
+                  className="text-slate-500 hover:text-purple-600 hover:bg-purple-50 flex items-center justify-center"
+                  icon={<img src={openaiIcon} className="w-4 h-4 opacity-70" />}
+                  onClick={() => handleGenerate(template.id, '2k')}
+                >
+                  2K
+                </Button>
+              </>
+            ) : (
+              <Button
+                type="text"
+                className="text-slate-500 hover:text-purple-600 hover:bg-purple-50 flex items-center justify-center"
+                icon={<img src={openaiIcon} className="w-4 h-4 opacity-70" />}
+                onClick={() => handleGenerate(template.id, '2k')}
+              >
+                生成
+              </Button>
+            )}
+          </>
+        )}
+        <Popconfirm
+          title="确定要删除该模板吗？"
+          onConfirm={() => handleDelete(template.id)}
+          okText="确定"
+          cancelText="取消"
+          okButtonProps={{ danger: true }}
+        >
+          <Button type="text" danger icon={<DeleteOutlined />} />
+        </Popconfirm>
+      </Space>
+    </div>
+  )
+}
+
+export function TemplateItemList({
+  selectedSource,
+  filteredTemplates,
+  onBack
+}: TemplateItemListProps) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-2 mb-4">
@@ -96,83 +165,32 @@ export function TemplateItemList({
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredTemplates.map((item) => (
+            {filteredTemplates.map((template) => (
               <Card
-                key={item.id}
+                key={template.id}
                 size="small"
                 className="shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex gap-4">
-                  <ImageGroup images={item.images || []} />
+                  <ImageGroup images={template.images || []} />
                   <div className="flex-1 min-w-0 flex flex-col">
-                    <div className="flex justify-between items-center mb-2">
-                      <Tag
-                        color={item.usageType === 'image' ? 'blue' : 'purple'}
-                      >
-                        {item.usageType === 'image' ? '图片' : '视频'}
-                      </Tag>
-                      <Space size={8} className="flex-nowrap">
-                        {item.usageType === 'image' && (
-                          <>
-                            <Button
-                              type="text"
-                              className="text-slate-500 hover:text-purple-600 hover:bg-purple-50 flex items-center justify-center"
-                              icon={
-                                <img
-                                  src={openaiIcon}
-                                  className="w-4 h-4 opacity-70"
-                                />
-                              }
-                              onClick={() => handleGenerate(item.id, '1k')}
-                            >
-                              1K
-                            </Button>
-                            <Button
-                              type="text"
-                              className="text-slate-500 hover:text-purple-600 hover:bg-purple-50 flex items-center justify-center"
-                              icon={
-                                <img
-                                  src={openaiIcon}
-                                  className="w-4 h-4 opacity-70"
-                                />
-                              }
-                              onClick={() => handleGenerate(item.id, '2k')}
-                            >
-                              2K
-                            </Button>
-                          </>
-                        )}
-                        <Popconfirm
-                          title="确定要删除该模板吗？"
-                          onConfirm={() => onDelete(item.id)}
-                          okText="确定"
-                          cancelText="取消"
-                          okButtonProps={{ danger: true }}
-                        >
-                          <Button
-                            type="text"
-                            danger
-                            icon={<DeleteOutlined />}
-                          />
-                        </Popconfirm>
-                      </Space>
-                    </div>
-                    {item.title && (
+                    <CardHeader template={template} />
+                    {template.title && (
                       <div
                         className="font-bold text-slate-800 mb-1 truncate"
-                        title={item.title}
+                        title={template.title}
                       >
-                        {item.title}
+                        {template.title}
                       </div>
                     )}
                     <p
                       className="text-sm text-slate-600 line-clamp-2 mt-1"
-                      title={item.prompt}
+                      title={template.prompt}
                     >
-                      {item.prompt}
+                      {template.prompt}
                     </p>
                     <div className="mt-auto text-xs text-slate-400">
-                      {new Date(item.createdAt).toLocaleString()}
+                      {new Date(template.createdAt).toLocaleString()}
                     </div>
                   </div>
                 </div>

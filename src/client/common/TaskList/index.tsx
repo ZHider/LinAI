@@ -8,10 +8,15 @@ import {
 } from '@ant-design/icons'
 import type { Task } from '../../../server/common/task-manager'
 import { useTasks } from '../../hooks/useTasks'
+import {
+  GPT_IMAGE_RMB_RATIO,
+  useGPTImageQuota
+} from '../../hooks/useGPTImageQuota'
 import { DeleteTaskButton } from './DeleteTaskButton'
 
 export function TaskList() {
   const { data: tasks = [], loading, refresh: fetchTasks } = useTasks()
+  const { quota } = useGPTImageQuota()
 
   const columns = [
     {
@@ -69,8 +74,8 @@ export function TaskList() {
           <Tooltip
             title={
               <div>
-                <div>1k 图：约20~40秒</div>
-                <div>2k 图：约40~60秒</div>
+                <div>1k 图：约30~60秒</div>
+                <div>2k 图：约40~80秒</div>
               </div>
             }
           >
@@ -88,31 +93,40 @@ export function TaskList() {
       title: '预估费用',
       key: 'cost',
       render: (_: any, record: Task) => {
-        if (record.source === 'gpt-image-2' && record.gptTokenUsage) {
-          const inputTokens = record.gptTokenUsage.input_tokens || 0
-          const outputTokens = record.gptTokenUsage.output_tokens || 0
-          const inputCost = (20 / 1000000) * inputTokens * 1.4
-          const outputCost = (120 / 1000000) * outputTokens * 1.4
-          const totalCost =
-            Math.ceil(inputCost * 100) / 100 + Math.ceil(outputCost * 100) / 100
-          const cost2str = (cost: number) =>
-            (Math.ceil(cost * 100) / 100).toFixed(2) + ' ￥'
-          const tooltipContent = (
-            <div>
-              <div>输入 tokens: {inputTokens}</div>
-              <div>输入预估费用: {cost2str(inputCost)}</div>
-              <div>输出 tokens: {outputTokens}</div>
-              <div>输出预估费用: {cost2str(outputCost)}</div>
-            </div>
-          )
+        if (record.source === 'gpt-image-2') {
+          if (quota && quota.unlimited_quota === false) {
+            return `单次 ${(0.04 * GPT_IMAGE_RMB_RATIO).toFixed(2)} ￥`
+          }
+          if (record.gptTokenUsage) {
+            const inputTokens = record.gptTokenUsage.input_tokens || 0
+            const outputTokens = record.gptTokenUsage.output_tokens || 0
+            const inputCost = (20 / 1000000) * inputTokens * GPT_IMAGE_RMB_RATIO
+            const outputCost =
+              (120 / 1000000) * outputTokens * GPT_IMAGE_RMB_RATIO
+            const totalCost =
+              Math.ceil(inputCost * 100) / 100 +
+              Math.ceil(outputCost * 100) / 100
+            const cost2str = (cost: number) =>
+              (Math.ceil(cost * 100) / 100).toFixed(2) + ' ￥'
+            const tooltipContent = (
+              <div>
+                <div>输入 tokens: {inputTokens}</div>
+                <div>输入预估费用: {cost2str(inputCost)}</div>
+                <div>输出 tokens: {outputTokens}</div>
+                <div>输出预估费用: {cost2str(outputCost)}</div>
+              </div>
+            )
 
-          return (
-            <Tooltip title={tooltipContent}>
-              <span style={{ cursor: 'help', borderBottom: '1px dashed #ccc' }}>
-                {cost2str(totalCost)}
-              </span>
-            </Tooltip>
-          )
+            return (
+              <Tooltip title={tooltipContent}>
+                <span
+                  style={{ cursor: 'help', borderBottom: '1px dashed #ccc' }}
+                >
+                  {cost2str(totalCost)}
+                </span>
+              </Tooltip>
+            )
+          }
         }
         return '-'
       },

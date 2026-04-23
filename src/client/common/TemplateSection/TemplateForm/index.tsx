@@ -8,6 +8,7 @@ import { openSettingModal } from '../../../common/SettingModal'
 import { useGlobalStore } from '../../../store/global'
 
 import { ImageUpload } from './ImageUpload'
+import { useGPTImageQuota } from '../../../hooks/useGPTImageQuota'
 
 const client = hc<AppType>('/')
 
@@ -29,6 +30,7 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
   const [trialGenerating, setTrialGenerating] = useState(false)
   const [trialImage, setTrialImage] = useState<string | null>(null)
   const gptImageApiKey = useGlobalStore((state) => state.gptImageApiKey)
+  const { quota } = useGPTImageQuota()
 
   const doTrial = async () => {
     const prompt = form.getFieldValue('prompt')
@@ -75,7 +77,7 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
         initialTab: 'gpt-image',
         onSuccess: () => {
           doTrial()
-        },
+        }
       })
       return
     }
@@ -241,7 +243,9 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
                 className="grow border-purple-300 text-purple-600 hover:text-purple-500 hover:border-purple-400"
               >
                 生成1k图测试
-                <span className="text-xs text-gray-400">(保存模板后2k)</span>
+                {quota?.unlimited_quota && (
+                  <span className="text-xs text-gray-400">(保存模板后2k)</span>
+                )}
               </Button>
             )}
             <Button

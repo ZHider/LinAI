@@ -1,12 +1,8 @@
 import { useState, forwardRef, useImperativeHandle } from 'react'
-import { message, Spin } from 'antd'
-import { hc } from 'hono/client'
-import type { AppType } from '../../../../server'
+import { Spin } from 'antd'
 import { useTemplates } from '../../../hooks/useTemplates'
 import { TemplateFolder } from './TemplateFolder'
 import { TemplateItemList } from './TemplateItemList'
-
-const client = hc<AppType>('/')
 
 export interface TemplateListRef {
   refresh: () => void
@@ -22,21 +18,6 @@ export const TemplateList = forwardRef<TemplateListRef, unknown>((_, ref) => {
   useImperativeHandle(ref, () => ({
     refresh
   }))
-
-  const handleDelete = async (id: string) => {
-    try {
-      const res = await client.api.template[':id'].$delete({ param: { id } })
-      const json = await res.json()
-      if (json.success) {
-        message.success('删除成功')
-        refresh()
-      } else {
-        message.error(json.error || '删除失败')
-      }
-    } catch (error) {
-      message.error('请求失败')
-    }
-  }
 
   const renderTemplateList = () => {
     if (selectedSource === null) {
@@ -63,7 +44,6 @@ export const TemplateList = forwardRef<TemplateListRef, unknown>((_, ref) => {
         selectedSource={selectedSource}
         filteredTemplates={filteredTemplates}
         onBack={() => setSelectedSource(null)}
-        onDelete={handleDelete}
       />
     )
   }

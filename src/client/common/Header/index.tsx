@@ -1,6 +1,7 @@
 import LinpxLogo from '../../assets/icon/linpx.png'
 import { SettingOutlined } from '@ant-design/icons'
 import { openSettingModal } from '../SettingModal'
+import { GPTImageQuota } from './GPTImageQuota'
 
 export function Header() {
   return (
@@ -14,11 +15,14 @@ export function Header() {
             LinAI：AI 任务编排集成
           </h1>
         </div>
-        <div
-          className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 cursor-pointer transition-colors"
-          onClick={() => openSettingModal()}
-        >
-          <SettingOutlined className="text-xl text-slate-600" />
+        <div className="flex items-center gap-4">
+          <GPTImageQuota />
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 cursor-pointer transition-colors"
+            onClick={() => openSettingModal()}
+          >
+            <SettingOutlined className="text-xl text-slate-600" />
+          </div>
         </div>
       </div>
     </header>
