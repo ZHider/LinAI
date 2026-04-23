@@ -8,8 +8,8 @@ import sharp from 'sharp'
 
 // 图片处理配置
 export const IMAGE_MAX_DIMENSION = 1600
-export const IMAGE_COMPRESS_THRESHOLD = 150 * 1024 // 150kb
-export const IMAGE_COMPRESS_QUALITY = 75
+// webp 默认就有 80 的压缩
+export const IMAGE_COMPRESS_QUALITY = 60
 
 // 目录配置
 export const GENERATED_IMAGES_DIR = path.join(process.cwd(), 'data', 'images', 'generated')
@@ -66,10 +66,7 @@ const staticApi = new Hono()
 
         let webpBuffer = await sharpInstance.webp().toBuffer()
 
-        // 如果超过指定大小进行指定quality的压缩
-        if (webpBuffer.length > IMAGE_COMPRESS_THRESHOLD) {
-          webpBuffer = await sharpInstance.webp({ quality: IMAGE_COMPRESS_QUALITY }).toBuffer()
-        }
+        webpBuffer = await sharpInstance.webp({ quality: IMAGE_COMPRESS_QUALITY }).toBuffer()
 
         const hash = crypto
           .createHash('md5')

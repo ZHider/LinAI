@@ -6,7 +6,7 @@ import { taskManager } from './common/task'
 import { templateManager } from '../common/template-manager'
 import { TaskTemplate } from '../common/template-manager'
 import { logger } from '../module/utils/logger'
-import { GENERATED_IMAGES_API_PATH, GENERATED_IMAGES_DIR } from './common/static'
+import { GENERATED_IMAGES_API_PATH, GENERATED_IMAGES_DIR, INPUT_IMAGES_DIR } from './common/static'
 import fs from 'fs-extra'
 import path from 'path'
 import crypto from 'crypto'
@@ -33,6 +33,7 @@ interface GenerateGPTImageOptions {
   prompt: string
   size: string
   quality?: 'low' | 'medium' | 'high'
+  images?: string[]
 }
 
 function calculateSize(aspectRatio: string, baseSize: 1024 | 2048): string {
@@ -62,7 +63,7 @@ function calculateSize(aspectRatio: string, baseSize: 1024 | 2048): string {
 async function generateGPTImage(
   options: GenerateGPTImageOptions
 ): Promise<{ url: string; usage?: GPTImageResponse['usage'] }> {
-  const { apiKey, prompt, size, quality = 'medium' } = options
+  const { apiKey, prompt, size, quality = 'medium', images } = options
 
   const response = await fetch('https://ai.t8star.cn/v1/images/generations', {
     method: 'POST',
@@ -74,7 +75,8 @@ async function generateGPTImage(
       model: 'gpt-image-2',
       prompt: prompt,
       size: size,
-      quality: quality
+      quality: quality,
+      image: images || []
     })
   })
 
@@ -122,6 +124,38 @@ async function handleImageGeneration(
 
     const finalSize = calculateSize(template.aspectRatio || '1:1', isTrial ? 1024 : 2048)
 
+    let base64Images: string[] = []
+    if (template.images && template.images.length > 0) {
+      for (const imgUrl of template.images) {
+        try {
+          const filename = imgUrl.split('/').pop()
+          if (filename) {
+            let filepath = ''
+            if (imgUrl.includes('/images/generated/')) {
+              filepath = path.join(GENERATED_IMAGES_DIR, filename)
+            } else if (imgUrl.includes('/images/input/')) {
+              filepath = path.join(INPUT_IMAGES_DIR, filename)
+            } else {
+              // fallback
+              filepath = path.join(INPUT_IMAGES_DIR, filename)
+            }
+
+            if (await fs.pathExists(filepath)) {
+              const buffer = await fs.readFile(filepath)
+              const ext = path.extname(filename).slice(1)
+              let mimeType = ext === 'jpg' ? 'jpeg' : ext
+              if (ext === 'webp') mimeType = 'webp'
+              base64Images.push(`data:image/${mimeType};base64,${buffer.toString('base64')}`)
+            } else {
+              logger.error(`Template image not found on disk: ${filepath}`)
+            }
+          }
+        } catch (e) {
+          logger.error('Failed to read template image', e)
+        }
+      }
+    }
+
     let imageUrl: string
     let gptTokenUsage: GPTImageResponse['usage'] | undefined
     try {
@@ -129,7 +163,8 @@ async function handleImageGeneration(
         apiKey,
         prompt: template.prompt,
         size: finalSize,
-        quality
+        quality,
+        images: base64Images.length > 0 ? base64Images : undefined
       })
       imageUrl = res.url
       gptTokenUsage = res.usage

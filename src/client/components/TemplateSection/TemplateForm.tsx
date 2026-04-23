@@ -1,13 +1,24 @@
 import { useState } from 'react'
 import { useLocalStorageState } from 'ahooks'
-import { PlusOutlined, DownloadOutlined } from '@ant-design/icons'
-import { Form, Input, Radio, Button, message, Image, Select } from 'antd'
+import {
+  PlusOutlined,
+  UploadOutlined,
+  DownloadOutlined
+} from '@ant-design/icons'
+import {
+  Form,
+  Input,
+  Radio,
+  Button,
+  message,
+  Upload,
+  Image,
+  Select
+} from 'antd'
 import { hc } from 'hono/client'
 import type { AppType } from '../../../server'
 import { GPTTokenModal } from '../GPTImageSection/GPTTokenModal'
 import { useGlobalStore } from '../../store/global'
-
-import { ImageUpload } from './ImageUpload'
 
 const client = hc<AppType>('/')
 
@@ -106,6 +117,32 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
     }
   }
 
+  const handleUpload = (file: File) => {
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      const base64 = e.target?.result as string
+      setUploadingCount((c) => c + 1)
+      try {
+        const res = await client.api.static.images.upload.$post({
+          json: { image: base64 }
+        })
+        const data = await res.json()
+        if (data.success && 'url' in data) {
+          setImageUrls((prev) => [...prev, data.url as string])
+          message.success('图片上传成功')
+        } else {
+          message.error((data as any).error || '图片上传失败')
+        }
+      } catch (error) {
+        message.error('图片上传请求失败')
+      } finally {
+        setUploadingCount((c) => Math.max(0, c - 1))
+      }
+    }
+    reader.readAsDataURL(file)
+    return false // 阻止默认上传行为
+  }
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
       <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
@@ -172,16 +209,31 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
         </div>
 
         <Form.Item label="上传图片">
-          <ImageUpload
-            value={imageUrls}
-            onChange={setImageUrls}
-            onUploadingChange={(isUploading) =>
-              setUploadingCount(isUploading ? 1 : 0)
-            }
-            onFirstImageRatio={(ratio) => {
-              form.setFieldsValue({ aspectRatio: ratio })
-            }}
-          />
+          <Upload
+            accept="image/*"
+            showUploadList={false}
+            beforeUpload={handleUpload}
+            multiple
+          >
+            <Button icon={<UploadOutlined />}>选择多张图片</Button>
+          </Upload>
+          {imageUrls.length > 0 && (
+            <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+              {imageUrls.map((url, index) => (
+                <div
+                  key={index}
+                  className="shrink-0 rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-100"
+                  style={{ width: '80px', height: '120px' }}
+                >
+                  <img
+                    src={url}
+                    alt={`preview-${index}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </Form.Item>
 
         <Form.Item
@@ -247,7 +299,7 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
               loading={submitting}
               disabled={uploadingCount > 0}
               block={usageType !== 'image'}
-              className="grow bg-emerald-600 hover:bg-emerald-700"
+              className="w-1/2 bg-emerald-600 hover:bg-emerald-700"
               size="large"
             >
               保存模板
