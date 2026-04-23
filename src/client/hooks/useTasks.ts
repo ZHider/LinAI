@@ -4,20 +4,20 @@ import type { AppType } from '../../server'
 
 const client = hc<AppType>('/')
 
-export function useTasks(usageType: 'image' | 'video') {
+export function useTasks() {
   return useRequest(
     async () => {
-      const res = await client.api.task[':usageType'].$get({
-        param: { usageType }
-      })
+      const res = await client.api.task.$get()
       const json = await res.json()
       if (json.success) {
-        return json.data
+        const tasks = json.data
+        return tasks.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
       } else {
         return []
       }
     },
     {
+      cacheKey: 'global-tasks',
       pollingInterval: 5000,
       onError: () => {
         console.error('Failed to fetch tasks')

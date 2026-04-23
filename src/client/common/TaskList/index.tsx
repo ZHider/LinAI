@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { Card, Table, Tag, Typography, Button, Image, Tooltip } from 'antd'
 import {
   SyncOutlined,
@@ -7,52 +6,12 @@ import {
   ClockCircleOutlined,
   QuestionCircleOutlined
 } from '@ant-design/icons'
-import { hc } from 'hono/client'
-import type { AppType } from '../../../server'
 import type { Task } from '../../../server/common/task-manager'
+import { useTasks } from '../../hooks/useTasks'
 import { DeleteTaskButton } from './DeleteTaskButton'
 
-const client = hc<AppType>('/')
-
 export function TaskList() {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [loading, setLoading] = useState(false)
-
-  const fetchTasks = async () => {
-    setLoading(true)
-    try {
-      const resImage = await client.api.task[':usageType'].$get({
-        param: { usageType: 'image' }
-      })
-      const resVideo = await client.api.task[':usageType'].$get({
-        param: { usageType: 'video' }
-      })
-
-      const imageJson = await resImage.json()
-      const videoJson = await resVideo.json()
-
-      let allTasks: Task[] = []
-      if (imageJson.success) {
-        allTasks = [...allTasks, ...(imageJson.data as Task[])]
-      }
-      if (videoJson.success) {
-        allTasks = [...allTasks, ...(videoJson.data as Task[])]
-      }
-
-      allTasks.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
-      setTasks(allTasks)
-    } catch (error) {
-      console.error('Failed to fetch tasks', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchTasks()
-    const timer = setInterval(fetchTasks, 5000)
-    return () => clearInterval(timer)
-  }, [])
+  const { data: tasks = [], loading, refresh: fetchTasks } = useTasks()
 
   const columns = [
     {
@@ -197,11 +156,7 @@ export function TaskList() {
       title: '操作',
       key: 'action',
       render: (_: any, record: Task) => (
-        <DeleteTaskButton
-          id={record.id}
-          usageType={record.rawTemplate?.usageType as 'image' | 'video'}
-          onSuccess={fetchTasks}
-        />
+        <DeleteTaskButton id={record.id} onSuccess={fetchTasks} />
       ),
       width: 80
     }

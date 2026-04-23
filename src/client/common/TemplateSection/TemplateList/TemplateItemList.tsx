@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Button, Card, Popconfirm, Space, Tag, message } from 'antd'
 import {
   ArrowLeftOutlined,
@@ -11,6 +10,7 @@ import { useGlobalStore } from '../../../store/global'
 import { openGPTTokenModal } from '../../../module/GPTImageSection/openGPTTokenModal'
 import { ImageGroup } from './ImageGroup'
 import { TaskTemplate } from '../../../../server/common/template-manager'
+import { useTasks } from '../../../hooks/useTasks'
 import openaiIcon from '../../../assets/icon/openai.svg'
 
 const client = hc<AppType>('/')
@@ -29,12 +29,16 @@ export function TemplateItemList({
   onDelete
 }: TemplateItemListProps) {
   const gptImageApiKey = useGlobalStore((state) => state.gptImageApiKey)
+  const { refresh } = useTasks()
 
   const doGenerate = async (
     apiKey: string,
     templateId: string,
     quality: 'low' | 'high'
   ) => {
+    message.success('任务提交成功')
+    // give server some time to create the task
+    setTimeout(() => refresh(), 500)
     try {
       const res = await client.api.gptImage.generate.$post({
         json: {
@@ -57,6 +61,8 @@ export function TemplateItemList({
       }
     } catch (error) {
       message.error('请求失败')
+    } finally {
+      refresh()
     }
   }
 

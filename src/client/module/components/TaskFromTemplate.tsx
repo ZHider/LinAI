@@ -22,12 +22,13 @@ export function TaskFromTemplate({ usageType }: TaskFromTemplateProps) {
 
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
 
-  const {
-    data = [],
-    loading: tasksLoading,
-    refresh: fetchTasks
-  } = useTasks(usageType)
-  const tasks = data as Task[]
+  const { data = [], loading: tasksLoading, refresh: fetchTasks } = useTasks()
+  const allTasks = data as Task[]
+
+  const tasks = useMemo(
+    () => allTasks.filter((t) => t.rawTemplate?.usageType === usageType),
+    [allTasks, usageType]
+  )
 
   useEffect(() => {
     fetchTemplates()
@@ -39,8 +40,7 @@ export function TaskFromTemplate({ usageType }: TaskFromTemplateProps) {
       return
     }
     try {
-      const res = await client.api.task[':usageType']['from-template'].$post({
-        param: { usageType },
+      const res = await client.api.task['from-template'].$post({
         // The server route does not declare a validator, so Hono can't infer the JSON body here.
         json: { templateId: selectedTemplate }
       })
@@ -59,8 +59,8 @@ export function TaskFromTemplate({ usageType }: TaskFromTemplateProps) {
 
   const handleDeleteTask = async (id: string) => {
     try {
-      const res = await client.api.task[':usageType'][':id'].$delete({
-        param: { usageType, id }
+      const res = await client.api.task[':id'].$delete({
+        param: { id }
       })
       const json = await res.json()
       if (json.success) {

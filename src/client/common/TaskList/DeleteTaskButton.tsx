@@ -8,11 +8,10 @@ const client = hc<AppType>('/')
 
 interface DeleteTaskButtonProps {
   id: string
-  usageType: 'image' | 'video'
   onSuccess: () => void
 }
 
-export function DeleteTaskButton({ id, usageType, onSuccess }: DeleteTaskButtonProps) {
+export function DeleteTaskButton({ id, onSuccess }: DeleteTaskButtonProps) {
   const [skipDeleteConfirm, setSkipDeleteConfirm] = useLocalStorageState(
     'skipDeleteTaskConfirm',
     {
@@ -22,8 +21,8 @@ export function DeleteTaskButton({ id, usageType, onSuccess }: DeleteTaskButtonP
 
   const doDelete = async () => {
     try {
-      const res = await client.api.task[':usageType'][':id'].$delete({
-        param: { usageType, id }
+      const res = await client.api.task[':id'].$delete({
+        param: { id }
       })
       const json = await res.json()
       if (json.success) {

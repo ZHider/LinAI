@@ -10,12 +10,10 @@ export const taskManager = new TaskManager()
 const taskApi = new Hono()
   // Chain route declarations so Hono keeps the full client route map in AppType.
   .get(
-    '/:usageType',
-    zValidator('param', z.object({ usageType: z.enum(['image', 'video']) })),
+    '/',
     async (c) => {
-      const { usageType } = c.req.valid('param')
       try {
-        const tasks = await taskManager.getTasksByUsageType(usageType)
+        const tasks = await taskManager.getTasks()
         return c.json({ success: true as const, data: tasks })
       } catch (error: any) {
         return c.json({ success: false as const, error: error.message }, 500)
@@ -23,11 +21,9 @@ const taskApi = new Hono()
     }
   )
   .post(
-    '/:usageType/from-template',
-    zValidator('param', z.object({ usageType: z.enum(['image', 'video']) })),
+    '/from-template',
     zValidator('json', z.object({ templateId: z.string().min(1, 'templateId is required'), source: z.string().optional().default('unknown') })),
     async (c) => {
-      const { usageType } = c.req.valid('param')
       try {
         const { templateId, source } = c.req.valid('json')
         const templates = await templateManager.getTemplates()
@@ -36,10 +32,6 @@ const taskApi = new Hono()
           return c.json({ success: false as const, error: 'Template not found' }, 404)
         }
         const newTask = await taskManager.createTaskFromTemplate(template, source)
-        // Since it's created for this module, ensure usageType matches.
-        if (newTask.rawTemplate?.usageType !== usageType) {
-          // Assuming the frontend passes a templateId that matches the module.
-        }
         return c.json({ success: true as const, data: newTask })
       } catch (error: any) {
         return c.json({ success: false as const, error: error.message }, 500)
@@ -47,8 +39,8 @@ const taskApi = new Hono()
     }
   )
   .delete(
-    '/:usageType/:id',
-    zValidator('param', z.object({ usageType: z.enum(['image', 'video']), id: z.string() })),
+    '/:id',
+    zValidator('param', z.object({ id: z.string() })),
     async (c) => {
       try {
         const { id } = c.req.valid('param')
