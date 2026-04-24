@@ -175,12 +175,12 @@ export async function handleImageGeneration(options: {
       logger.info('GPT image generated successfully')
       imageUrl = res.url
       gptTokenUsage = res.usage
-    } catch (err: any) {
-      logger.error(`Failed to generate GPT image`, err.message)
-      await taskManager.updateTaskStatus(task.id, 'failed', err.message)
+    } catch (error: any) {
+      logger.error(`Failed to generate GPT image`, JSON.stringify(error))
+      await taskManager.updateTaskStatus(task.id, 'failed', error.message)
       return {
         status: 500,
-        data: { success: false as const, error: err.message }
+        data: { success: false as const, error: error.message }
       }
     }
 
@@ -220,7 +220,7 @@ export async function handleImageGeneration(options: {
       data: { success: true as const, image: imageUrl, taskId: task.id }
     }
   } catch (error: any) {
-    logger.error(`Failed to generate GPT image`, error.message)
+    logger.error(`Failed to generate GPT image`, JSON.stringify(error))
     return {
       status: 500,
       data: { success: false as const, error: error.message }

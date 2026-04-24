@@ -40,7 +40,7 @@ export class GeminiManager {
 
       throw new Error('No image generated')
     } catch (error) {
-      logger.error('Failed to generate image', error)
+      logger.error('Failed to generate image', JSON.stringify(error))
       return {
         success: false,
         error: error instanceof Error ? error.message : String(error)
