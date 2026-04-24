@@ -23,7 +23,7 @@ import type { Task } from '../../../server/common/task-manager'
 import { useTasks } from '../../hooks/useTasks'
 import {
   GPT_IMAGE_RMB_RATIO,
-  useGPTImageQuota
+  MODEL_GROUP_RATIO
 } from '../../hooks/useGPTImageQuota'
 import { DeleteTaskButton } from './DeleteButton'
 import styles from './index.module.scss'
@@ -35,7 +35,6 @@ const client = hc<AppType>('/')
 
 export function TaskList() {
   const { data: tasks = [], loading, refresh: fetchTasks } = useTasks()
-  const { quota } = useGPTImageQuota()
   const [downloadedIds, setDownloadedIds] = useLocalStorageState<string[]>(
     'downloadedTaskIds',
     { defaultValue: [] }
@@ -93,9 +92,11 @@ export function TaskList() {
       const inputTokens = record.gptTokenUsage.input_tokens || 0
       const outputTokens = record.gptTokenUsage.output_tokens || 0
       const inputCost =
-        (((5 / 1000000) * inputTokens) / GPT_IMAGE_RMB_RATIO) * 1.5
+        (((5 / 1000000) * inputTokens) / GPT_IMAGE_RMB_RATIO) *
+        MODEL_GROUP_RATIO
       const outputCost =
-        (((30 / 1000000) * outputTokens) / GPT_IMAGE_RMB_RATIO) * 1.5
+        (((30 / 1000000) * outputTokens) / GPT_IMAGE_RMB_RATIO) *
+        MODEL_GROUP_RATIO
       const totalCost = inputCost + outputCost
       const cost2str = (cost: number) =>
         (Math.ceil(cost * 100) / 100).toFixed(2) + ' ￥'

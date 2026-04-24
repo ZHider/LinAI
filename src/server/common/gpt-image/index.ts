@@ -34,7 +34,6 @@ interface GenerateGPTImageOptions {
   apiKey: string
   prompt: string
   size: string
-  quality?: 'low' | 'medium' | 'high'
   images?: string[]
 }
 
@@ -63,7 +62,7 @@ function calculateSize(aspectRatio: string, baseSize: 1024 | 2048): string {
 }
 
 async function generateGPTImageNew(options: GenerateGPTImageOptions) {
-  const { apiKey, prompt, size, quality = 'medium', images } = options
+  const { apiKey, prompt, size, images } = options
   const client = new OpenAI({
     apiKey,
     baseURL: 'https://api.wlai.vip/v1'
@@ -85,7 +84,7 @@ async function generateGPTImageNew(options: GenerateGPTImageOptions) {
     prompt,
     n: 1,
     size: size as any,
-    quality
+    quality: 'medium'
     // images: imagesToUpload
   })
 
@@ -104,11 +103,10 @@ async function generateGPTImageNew(options: GenerateGPTImageOptions) {
 export async function handleImageGeneration(options: {
   apiKey: string
   template: TaskTemplate
-  quality?: 'low' | 'medium' | 'high'
   size?: 1024 | 2048
 }) {
   try {
-    const { apiKey, template, quality = 'medium', size = 1024 } = options
+    const { apiKey, template, size = 1024 } = options
 
     logger.info(`Generating GPT image`)
 
@@ -169,7 +167,6 @@ export async function handleImageGeneration(options: {
         apiKey,
         prompt: template.prompt,
         size: finalSize,
-        quality,
         images: base64Images.length > 0 ? base64Images : undefined
       })
       logger.info('GPT image generated successfully')

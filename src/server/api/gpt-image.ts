@@ -125,7 +125,6 @@ const gptImageApi = new Hono()
       const result = await handleImageGeneration({
         apiKey,
         template,
-        quality: 'low',
         size: 1024
       })
       return c.json(result.data, result.status as any)

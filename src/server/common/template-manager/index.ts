@@ -32,6 +32,13 @@ class TemplateManager {
     }
     if (!fs.existsSync(this.dbPath)) {
       fs.writeFileSync(this.dbPath, JSON.stringify([]), 'utf-8')
+      this.addTemplate({
+        title: '模板示例1',
+        images: [],
+        prompt: '生成一张2030年福瑞（furry）科目的中考试卷',
+        usageType: 'image',
+        aspectRatio: '16:9'
+      })
     }
   }
 
@@ -76,4 +83,3 @@ class TemplateManager {
 }
 
 export const templateManager = new TemplateManager()
-
