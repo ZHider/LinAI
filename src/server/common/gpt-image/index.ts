@@ -34,7 +34,7 @@ interface GenerateGPTImageOptions {
   apiKey: string
   prompt: string
   size: string
-  images?: string[]
+  imagePaths: string[]
 }
 
 function calculateSize(aspectRatio: string, baseSize: 1024 | 2048): string {
@@ -62,13 +62,12 @@ function calculateSize(aspectRatio: string, baseSize: 1024 | 2048): string {
 }
 
 async function generateGPTImageNew(options: GenerateGPTImageOptions) {
-  const { apiKey, prompt, size, images } = options
+  const { apiKey, prompt, size, imagePaths: images } = options
   const client = new OpenAI({
     apiKey,
     baseURL: 'https://api.wlai.vip/v1'
   })
-
-  const imagesToUpload = images
+  const imagesToUpload = images.length
     ? await Promise.all(
         images.map(
           async (file) =>
@@ -79,14 +78,25 @@ async function generateGPTImageNew(options: GenerateGPTImageOptions) {
       )
     : undefined
 
-  const res = await client.images.generate({
-    model: GPT_IMAGE_SOURCE_MODEL,
-    prompt,
-    n: 1,
-    size: size as any,
-    quality: 'medium'
-    // images: imagesToUpload
-  })
+  let res: OpenAI.Images.ImagesResponse
+  if (imagesToUpload) {
+    res = await client.images.edit({
+      model: GPT_IMAGE_SOURCE_MODEL,
+      image: imagesToUpload || [],
+      prompt: prompt,
+      n: 1,
+      size: size as any,
+      quality: 'medium'
+    })
+  } else {
+    res = await client.images.generate({
+      model: GPT_IMAGE_SOURCE_MODEL,
+      prompt,
+      n: 1,
+      size: size as any,
+      quality: 'medium'
+    })
+  }
 
   const imageBuffer = Buffer.from(res.data?.[0].b64_json || '', 'base64')
 
@@ -126,36 +136,15 @@ export async function handleImageGeneration(options: {
 
     const finalSize = calculateSize(template.aspectRatio || '1:1', size)
 
-    let base64Images: string[] = []
-    if (template.images && template.images.length > 0) {
-      for (const imgUrl of template.images) {
-        try {
-          const filename = imgUrl.split('/').pop()
-          if (filename) {
-            let filepath = ''
-            if (imgUrl.includes('/images/generated/')) {
-              filepath = path.join(GENERATED_IMAGES_DIR, filename)
-            } else if (imgUrl.includes('/images/input/')) {
-              filepath = path.join(INPUT_IMAGES_DIR, filename)
-            } else {
-              // fallback
-              filepath = path.join(INPUT_IMAGES_DIR, filename)
-            }
-
-            if (await fs.pathExists(filepath)) {
-              const buffer = await fs.readFile(filepath)
-              const ext = path.extname(filename).slice(1)
-              let mimeType = ext === 'jpg' ? 'jpeg' : ext
-              if (ext === 'webp') mimeType = 'webp'
-              base64Images.push(
-                `data:image/${mimeType};base64,${buffer.toString('base64')}`
-              )
-            } else {
-              logger.error(`Template image not found on disk: ${filepath}`)
-            }
-          }
-        } catch (e) {
-          logger.error('Failed to read template image', e)
+    const imagePaths: string[] = []
+    for (const imgUrl of template.images) {
+      const filename = imgUrl.split('/').pop()
+      if (filename) {
+        const imagePath = path.join(INPUT_IMAGES_DIR, filename)
+        if (await fs.pathExists(imagePath)) {
+          imagePaths.push(imagePath)
+        } else {
+          throw new Error(`Template image not found on Input Dir: ${imagePath}`)
         }
       }
     }
@@ -167,7 +156,7 @@ export async function handleImageGeneration(options: {
         apiKey,
         prompt: template.prompt,
         size: finalSize,
-        images: base64Images.length > 0 ? base64Images : undefined
+        imagePaths
       })
       logger.info('GPT image generated successfully')
       filename = res.filename

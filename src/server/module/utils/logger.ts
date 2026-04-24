@@ -2,7 +2,7 @@ import fs from 'fs-extra'
 import path from 'path'
 import { EventEmitter } from 'events'
 
-const LOG_DIR = './logs'
+const LOG_DIR = './data/logs'
 
 export class Logger extends EventEmitter {
   private id: string
@@ -41,14 +41,14 @@ export class Logger extends EventEmitter {
   }
 
   log(message: any, ...args: any[]) {
+    console.log(message, ...args)
     const fullMessage = this.formatMessage(message, ...args)
-    console.log(fullMessage)
     this.writeToFile(fullMessage)
   }
 
   error(message: any, ...args: any[]) {
+    console.error(message, ...args)
     const fullMessage = this.formatMessage(message, ...args)
-    console.error(fullMessage)
     this.writeToFile(fullMessage)
   }
 
@@ -57,8 +57,8 @@ export class Logger extends EventEmitter {
   }
 
   warn(message: any, ...args: any[]) {
+    console.warn(message, ...args)
     const fullMessage = this.formatMessage(`⚠️ ${message}`, ...args)
-    console.warn(fullMessage)
     this.writeToFile(fullMessage)
   }
 
