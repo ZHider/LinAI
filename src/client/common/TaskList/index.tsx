@@ -30,6 +30,7 @@ import styles from './index.module.scss'
 import { DownloadButton } from './DownloadButton'
 import { TRIAL_TEMPLATE_TITLE } from '../../../server/common/template-manager/enum'
 import { GPT_IMAGE_SOURCE_MODEL } from '../../../server/common/gpt-image/enum'
+import { TaskListHeader } from './TaskListHeader'
 
 const client = hc<AppType>('/')
 
@@ -106,13 +107,16 @@ export function TaskList() {
           <div>输入预估费用: {cost2str(inputCost)}</div>
           <div>输出 tokens: {outputTokens}</div>
           <div>输出预估费用: {cost2str(outputCost)}</div>
+          <div>
+            以上根据token消耗粗略计算，实际费用根据分组可用性不同会有1~1.5倍波动，以实际扣费为准
+          </div>
         </div>
       )
 
       return (
         <Tooltip title={tooltipContent}>
           <Tag color="orange" style={{ cursor: 'help' }}>
-            {cost2str(totalCost)}
+            约{cost2str(totalCost)}
           </Tag>
         </Tooltip>
       )
@@ -125,14 +129,16 @@ export function TaskList() {
 
   return (
     <Card
-      title="任务列表"
       className="w-full shadow-sm border-slate-200"
-      extra={
-        <Button icon={<SyncOutlined />} onClick={fetchTasks} loading={loading}>
-          刷新
-        </Button>
-      }
+      styles={{ body: { paddingTop: 0 } }}
     >
+      <TaskListHeader
+        tasks={gptImageTasks}
+        downloadedIds={downloadedIds || []}
+        setDownloadedIds={setDownloadedIds}
+        fetchTasks={fetchTasks}
+        loading={loading}
+      />
       <List
         className={styles['task-list']}
         grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 2, xl: 2, xxl: 2 }}
@@ -184,7 +190,7 @@ export function TaskList() {
                       ) : (
                         <Tag color="orange">未下载</Tag>
                       )}
-                      {renderStatus(task.status)}
+                      {task.status !== 'completed' && renderStatus(task.status)}
                       {renderCost(task)}
                       {task.duration && (
                         <Tag>

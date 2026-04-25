@@ -35,9 +35,9 @@ export const TemplateList = forwardRef<TemplateListRef, unknown>((_, ref) => {
       )
     }
 
-    const filteredTemplates = templates.filter(
-      (t) => t.usageType === selectedSource
-    )
+    const filteredTemplates = templates
+      .filter((t) => t.usageType === selectedSource)
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
 
     return <TemplateItemList filteredTemplates={filteredTemplates} />
   }

@@ -3,7 +3,6 @@ import { useEffect } from 'react'
 // import { GPTImagePreview } from './module/GPTImageSection/GPTImagePreview'
 import { TemplateSection } from './common/TemplateSection'
 import { TaskList } from './common/TaskList'
-import { ScheduleOutlined } from '@ant-design/icons'
 import { ThunderboltOutlined } from '@ant-design/icons'
 import { Header } from './common/Header'
 import { useGlobalStore } from './store/global'
@@ -30,15 +29,6 @@ function App() {
         </div>
 
         <TemplateSection />
-
-        <div className="flex items-center gap-2 mt-4">
-          <div className="p-2 bg-blue-100 rounded-lg text-blue-600 flex items-center justify-center">
-            <ScheduleOutlined className="text-xl" />
-          </div>
-          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
-            任务列表
-          </h2>
-        </div>
 
         <section className="space-y-4">
           {/* 单独占一行的任务列表 */}
