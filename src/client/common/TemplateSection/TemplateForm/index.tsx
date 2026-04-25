@@ -11,6 +11,62 @@ import { ImageUpload } from './ImageUpload'
 
 const client = hc<AppType>('/')
 
+export function TitleFormItem({ className }: { className?: string }) {
+  return (
+    <Form.Item name="title" label="（可选）标题" className={className}>
+      <Input placeholder="请输入模板标题..." />
+    </Form.Item>
+  )
+}
+
+export function AspectRatioFormItem({ className }: { className?: string }) {
+  return (
+    <Form.Item
+      name="aspectRatio"
+      label="比例"
+      className={className}
+      rules={[{ required: true, message: '请选择比例' }]}
+    >
+      <Select
+        options={[
+          { label: '21:9', value: '21:9' },
+          { label: '2:1', value: '2:1' },
+          { label: '16:9', value: '16:9' },
+          { label: '4:3', value: '4:3' },
+          { label: '1:1', value: '1:1' },
+          { label: '3:4', value: '3:4' },
+          { label: '9:16', value: '9:16' },
+          { label: '1:2', value: '1:2' },
+          { label: '9:21', value: '9:21' }
+        ]}
+      />
+    </Form.Item>
+  )
+}
+
+export function PromptFormItem({
+  className,
+  label = '提示词'
+}: {
+  className?: string
+  label?: React.ReactNode
+}) {
+  return (
+    <Form.Item
+      name="prompt"
+      label={label}
+      className={className}
+      rules={[{ required: true, message: '请填写提示词' }]}
+    >
+      <Input.TextArea
+        rows={5}
+        placeholder="请输入生成内容的提示词..."
+        style={{ resize: 'none' }}
+      />
+    </Form.Item>
+  )
+}
+
 interface TemplateFormProps {
   onSuccess: () => void
 }
@@ -148,30 +204,8 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
         </Form.Item>
 
         <div className="flex gap-4">
-          <Form.Item name="title" label="（可选）标题" className="flex-1">
-            <Input placeholder="请输入模板标题..." />
-          </Form.Item>
-
-          <Form.Item
-            name="aspectRatio"
-            label="比例"
-            className="w-1/3"
-            rules={[{ required: true, message: '请选择比例' }]}
-          >
-            <Select
-              options={[
-                { label: '21:9', value: '21:9' },
-                { label: '2:1', value: '2:1' },
-                { label: '16:9', value: '16:9' },
-                { label: '4:3', value: '4:3' },
-                { label: '1:1', value: '1:1' },
-                { label: '3:4', value: '3:4' },
-                { label: '9:16', value: '9:16' },
-                { label: '1:2', value: '1:2' },
-                { label: '9:21', value: '9:21' }
-              ]}
-            />
-          </Form.Item>
+          <TitleFormItem className="flex-1" />
+          <AspectRatioFormItem className="w-1/3" />
         </div>
 
         <Form.Item label="上传图片">
@@ -187,21 +221,13 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
           />
         </Form.Item>
 
-        <Form.Item
-          name="prompt"
+        <PromptFormItem
           label={
             <div className="flex items-center gap-2">
               <span>提示词</span>
             </div>
           }
-          rules={[{ required: true, message: '请填写提示词' }]}
-        >
-          <Input.TextArea
-            rows={5}
-            placeholder="请输入生成内容的提示词..."
-            style={{ resize: 'none' }}
-          />
-        </Form.Item>
+        />
 
         {trialImage && (
           <div className="mb-4 p-4 bg-slate-50 rounded-lg border border-slate-100 flex flex-col items-center gap-2 relative group">

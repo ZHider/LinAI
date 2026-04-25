@@ -1,9 +1,5 @@
-import { Button, Card, Popconfirm, Space, Tag, message } from 'antd'
-import {
-  ArrowLeftOutlined,
-  DeleteOutlined,
-  InboxOutlined
-} from '@ant-design/icons'
+import { Button, Card, Popconfirm, Space, Tag, message, Tooltip } from 'antd'
+import { DeleteOutlined, InboxOutlined } from '@ant-design/icons'
 import { hc } from 'hono/client'
 import type { AppType } from '../../../../server'
 import { useGlobalStore } from '../../../store/global'
@@ -18,9 +14,7 @@ import { TemplateEditButton } from './TemplateEditButton'
 const client = hc<AppType>('/')
 
 interface TemplateItemListProps {
-  selectedSource: 'video' | 'image'
   filteredTemplates: TaskTemplate[]
-  onBack: () => void
 }
 
 const CardHeader = ({ template }: { template: TaskTemplate }) => {
@@ -83,29 +77,43 @@ const CardHeader = ({ template }: { template: TaskTemplate }) => {
   }
 
   return (
-    <div className="flex justify-between items-center mb-2">
-      <Tag color={template.usageType === 'image' ? 'blue' : 'purple'}>
-        {template.usageType === 'image' ? '图片' : '视频'}
-      </Tag>
-      <Space size={8} className="flex-nowrap">
+    <div className="flex justify-between items-center">
+      <Space size={4}>
+        <Tag
+          color={template.usageType === 'image' ? 'blue' : 'purple'}
+          className="m-0"
+        >
+          {template.usageType === 'image' ? '图片' : '视频'}
+        </Tag>
+        {template.aspectRatio && (
+          <Tag color="default" className="m-0">
+            {template.aspectRatio}
+          </Tag>
+        )}
+      </Space>
+      <Space size={4} className="flex-nowrap">
         {template.usageType === 'image' && (
           <>
-            <Button
-              type="text"
-              className="text-slate-500 hover:text-purple-600 hover:bg-purple-50 flex items-center justify-center"
-              icon={<img src={openaiIcon} className="w-4 h-4 opacity-70" />}
-              onClick={() => handleGenerate(template.id, '1k')}
-            >
-              1K
-            </Button>
-            <Button
-              type="text"
-              className="text-slate-500 hover:text-purple-600 hover:bg-purple-50 flex items-center justify-center"
-              icon={<img src={openaiIcon} className="w-4 h-4 opacity-70" />}
-              onClick={() => handleGenerate(template.id, '2k')}
-            >
-              2K
-            </Button>
+            <Tooltip title="生成1K测试图">
+              <Button
+                type="text"
+                className="text-slate-500 hover:text-purple-600 hover:bg-purple-50 flex items-center justify-center"
+                icon={<img src={openaiIcon} className="w-4 h-4 opacity-70" />}
+                onClick={() => handleGenerate(template.id, '1k')}
+              >
+                1K
+              </Button>
+            </Tooltip>
+            <Tooltip title="生成2K高清图">
+              <Button
+                type="text"
+                className="text-slate-500 hover:text-purple-600 hover:bg-purple-50 flex items-center justify-center"
+                icon={<img src={openaiIcon} className="w-4 h-4 opacity-70" />}
+                onClick={() => handleGenerate(template.id, '2k')}
+              >
+                2K
+              </Button>
+            </Tooltip>
           </>
         )}
         <TemplateEditButton template={template} />
@@ -116,33 +124,18 @@ const CardHeader = ({ template }: { template: TaskTemplate }) => {
           cancelText="取消"
           okButtonProps={{ danger: true }}
         >
-          <Button type="text" danger icon={<DeleteOutlined />} />
+          <Tooltip title="删除模板">
+            <Button type="text" danger icon={<DeleteOutlined />} />
+          </Tooltip>
         </Popconfirm>
       </Space>
     </div>
   )
 }
 
-export function TemplateItemList({
-  selectedSource,
-  filteredTemplates,
-  onBack
-}: TemplateItemListProps) {
+export function TemplateItemList({ filteredTemplates }: TemplateItemListProps) {
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center gap-2 mb-4">
-        <Button
-          type="text"
-          icon={<ArrowLeftOutlined />}
-          onClick={onBack}
-          className="text-slate-500 hover:text-slate-800 -ml-2"
-        />
-        <h4 className="text-md font-medium text-slate-800 m-0">
-          {selectedSource === 'video' ? '视频' : '图片'} 模板 (
-          {filteredTemplates.length})
-        </h4>
-      </div>
-
       <div
         className="flex-1 overflow-y-auto pr-2"
         style={{ maxHeight: '550px' }}
@@ -153,7 +146,7 @@ export function TemplateItemList({
             <p className="text-sm font-medium">该分类下暂无模板内容</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
             {filteredTemplates.map((template) => (
               <Card
                 key={template.id}
@@ -162,23 +155,22 @@ export function TemplateItemList({
               >
                 <div className="flex gap-4">
                   <ImageGroup images={template.images || []} />
-                  <div className="flex-1 min-w-0 flex flex-col">
+                  <div className="flex-1 min-w-0 flex flex-col gap-1">
                     <CardHeader template={template} />
                     {template.title && (
                       <div
-                        className="font-bold text-slate-800 mb-1 truncate"
+                        className="font-bold text-slate-800 truncate"
                         title={template.title}
                       >
                         {template.title}
                       </div>
                     )}
-                    <p
-                      className="text-sm text-slate-600 line-clamp-2 mt-1"
-                      title={template.prompt}
-                    >
-                      {template.prompt}
-                    </p>
-                    <div className="mt-auto text-xs text-slate-400">
+                    <Tooltip title={template.prompt} placement="topLeft">
+                      <p className="text-sm text-slate-600 line-clamp-2 cursor-default m-0">
+                        {template.prompt}
+                      </p>
+                    </Tooltip>
+                    <div className="mt-auto text-xs text-slate-400 pt-1">
                       {new Date(template.createdAt).toLocaleString()}
                     </div>
                   </div>

@@ -65,7 +65,7 @@ export function TaskList() {
     if (status === 'completed')
       return (
         <Tag icon={<CheckCircleOutlined />} color="success">
-          已完成
+          完成
         </Tag>
       )
     if (status === 'running')
@@ -99,7 +99,7 @@ export function TaskList() {
         MODEL_GROUP_RATIO
       const totalCost = inputCost + outputCost
       const cost2str = (cost: number) =>
-        (Math.ceil(cost * 100) / 100).toFixed(2) + ' ￥'
+        '￥' + (Math.ceil(cost * 100) / 100).toFixed(2)
       const tooltipContent = (
         <div>
           <div>输入 tokens: {inputTokens}</div>
@@ -139,7 +139,7 @@ export function TaskList() {
         dataSource={gptImageTasks}
         loading={loading}
         pagination={{
-          pageSize: 12
+          pageSize: 10
         }}
         renderItem={(task) => (
           <List.Item>
@@ -176,9 +176,14 @@ export function TaskList() {
                     <div className="flex flex-wrap gap-1 mb-2">
                       <Tag color="blue">
                         {task.rawTemplate?.usageType === 'image'
-                          ? '图片生成'
-                          : '视频生成'}
+                          ? '图片'
+                          : '视频'}
                       </Tag>
+                      {downloadedIds?.includes(task.id) ? (
+                        <Tag color="cyan">已下载</Tag>
+                      ) : (
+                        <Tag color="orange">未下载</Tag>
+                      )}
                       {renderStatus(task.status)}
                       {renderCost(task)}
                       {task.duration && (
@@ -186,9 +191,6 @@ export function TaskList() {
                           <ClockCircleOutlined className="mr-1" />
                           {(task.duration / 1000).toFixed(1)}s
                         </Tag>
-                      )}
-                      {downloadedIds?.includes(task.id) && (
-                        <Tag color="cyan">已下载</Tag>
                       )}
                     </div>
 

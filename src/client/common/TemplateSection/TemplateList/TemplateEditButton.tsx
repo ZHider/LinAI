@@ -1,10 +1,15 @@
 import { useState } from 'react'
-import { Button, Modal, Form, Input, Select, message } from 'antd'
+import { Button, Modal, Form, message, Tooltip } from 'antd'
 import { EditOutlined } from '@ant-design/icons'
 import { hc } from 'hono/client'
 import type { AppType } from '../../../../server'
 import { TaskTemplate } from '../../../../server/common/template-manager'
 import { useTemplates } from '../../../hooks/useTemplates'
+import {
+  TitleFormItem,
+  AspectRatioFormItem,
+  PromptFormItem
+} from '../TemplateForm'
 
 const client = hc<AppType>('/')
 
@@ -60,12 +65,14 @@ export function TemplateEditButton({ template }: TemplateEditButtonProps) {
 
   return (
     <>
-      <Button
-        type="text"
-        icon={<EditOutlined />}
-        onClick={handleOpen}
-        className="text-slate-500 hover:text-blue-600"
-      />
+      <Tooltip title="编辑模板">
+        <Button
+          type="text"
+          icon={<EditOutlined />}
+          onClick={handleOpen}
+          className="text-slate-500 hover:text-blue-600"
+        />
+      </Tooltip>
       <Modal
         title="编辑模板"
         open={open}
@@ -82,41 +89,9 @@ export function TemplateEditButton({ template }: TemplateEditButtonProps) {
           onFinish={handleFinish}
           className="mt-4"
         >
-          <Form.Item name="title" label="（可选）标题">
-            <Input placeholder="请输入模板标题..." />
-          </Form.Item>
-
-          <Form.Item
-            name="aspectRatio"
-            label="比例"
-            rules={[{ required: true, message: '请选择比例' }]}
-          >
-            <Select
-              options={[
-                { label: '21:9', value: '21:9' },
-                { label: '2:1', value: '2:1' },
-                { label: '16:9', value: '16:9' },
-                { label: '4:3', value: '4:3' },
-                { label: '1:1', value: '1:1' },
-                { label: '3:4', value: '3:4' },
-                { label: '9:16', value: '9:16' },
-                { label: '1:2', value: '1:2' },
-                { label: '9:21', value: '9:21' }
-              ]}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="prompt"
-            label="提示词"
-            rules={[{ required: true, message: '请填写提示词' }]}
-          >
-            <Input.TextArea
-              rows={5}
-              placeholder="请输入生成内容的提示词..."
-              style={{ resize: 'none' }}
-            />
-          </Form.Item>
+          <TitleFormItem />
+          <AspectRatioFormItem />
+          <PromptFormItem />
         </Form>
       </Modal>
     </>

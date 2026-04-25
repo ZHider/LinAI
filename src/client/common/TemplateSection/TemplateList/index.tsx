@@ -39,20 +39,31 @@ export const TemplateList = forwardRef<TemplateListRef, unknown>((_, ref) => {
       (t) => t.usageType === selectedSource
     )
 
-    return (
-      <TemplateItemList
-        selectedSource={selectedSource}
-        filteredTemplates={filteredTemplates}
-        onBack={() => setSelectedSource(null)}
-      />
-    )
+    return <TemplateItemList filteredTemplates={filteredTemplates} />
   }
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col h-full">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-slate-800 m-0">
-          已有模板 ({templates.length})
+        <h3 className="text-lg font-semibold text-slate-800 m-0 flex items-center">
+          {selectedSource === null ? (
+            `所有模板 (${templates.length})`
+          ) : (
+            <>
+              <span
+                className="cursor-pointer hover:text-blue-600 transition-colors text-slate-500"
+                onClick={() => setSelectedSource(null)}
+              >
+                所有模板 ({templates.length})
+              </span>
+              <span className="text-slate-400 font-normal mx-2">/</span>
+              <span>
+                {selectedSource === 'video' ? '视频' : '图片'}模板 (
+                {templates.filter((t) => t.usageType === selectedSource).length}
+                )
+              </span>
+            </>
+          )}
         </h3>
       </div>
 
