@@ -1,6 +1,6 @@
 {
   "name": "wan-video-download",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -18,12 +18,14 @@
   "devDependencies": {
     "@ant-design/icons": "^6.1.1",
     "@tailwindcss/vite": "^4.2.2",
+    "@types/adm-zip": "^0.5.8",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/sharp": "^0.32.0",
     "@vitejs/plugin-react": "^6.0.1",
+    "adm-zip": "^0.5.17",
     "ahooks": "^3.9.7",
     "antd": "^6.3.6",
     "autoprefixer": "^10.5.0",

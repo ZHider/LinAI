@@ -1,8 +1,42 @@
 import fs from 'fs-extra'
 import { execSync } from 'child_process'
+import AdmZip from 'adm-zip'
 
 function main() {
   console.log('🚀 [Post-build] Starting...')
+
+  // 0. 检查 git 状态与打 tag
+  try {
+    console.log('🔍 [Post-build] Checking git status...')
+    const gitStatus = execSync('git status --porcelain').toString().trim()
+    if (gitStatus) {
+      console.error('❌ [Post-build] 工作区存在未提交的文件，请先 commit。')
+      process.exit(1)
+    }
+
+    const pkg = fs.readJsonSync('package.json')
+    const version = pkg.version
+    const tagName = `v${version}`
+
+    console.log(`🏷️ [Post-build] Checking tag ${tagName}...`)
+    const existingTags = execSync('git tag -l')
+      .toString()
+      .split('\n')
+      .map((t) => t.trim())
+    if (existingTags.includes(tagName)) {
+      console.error(
+        `❌ [Post-build] 标签 ${tagName} 已存在，请在 package.json 中更新版本号。`
+      )
+      process.exit(1)
+    }
+
+    console.log(`🏷️ [Post-build] Creating tag ${tagName}...`)
+    execSync(`git tag ${tagName}`)
+    console.log(`✅ [Post-build] Tag ${tagName} created successfully.`)
+  } catch (error) {
+    console.error('❌ [Post-build] Git 操作失败:', error)
+    process.exit(1)
+  }
 
   // 1. 复制 package.json 到 dist 目录
   fs.copyFileSync('package.json', 'dist/package.json')
@@ -39,6 +73,22 @@ function main() {
   console.log(
     '✅ [Post-build] Removed package.json and pnpm-lock.yaml from dist/'
   )
+
+  // 6. 打包 dist 目录
+  try {
+    const pkg = fs.readJsonSync('package.json')
+    const version = pkg.version
+    const zipName = `LinAI v${version}.zip`
+    console.log(`📦 [Post-build] Zipping dist directory to ${zipName}...`)
+
+    const zip = new AdmZip()
+    zip.addLocalFolder('dist')
+    zip.writeZip(zipName)
+    console.log(`✅ [Post-build] Successfully created ${zipName}`)
+  } catch (error) {
+    console.error('❌ [Post-build] 打包压缩文件失败:', error)
+    process.exit(1)
+  }
 
   console.log('🎉 [Post-build] Completed successfully.')
 }
