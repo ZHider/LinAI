@@ -108,12 +108,12 @@ export function openSettingModal(options?: {
                 </div>
                 <div className="text-red-500 text-xs flex items-start gap-1 mt-1">
                   <ExclamationCircleOutlined className="mt-1" />
-                  <span>
-                    费用提示：开启 4K 后，Token 消耗是 2K 的 4
-                    倍以上，单张图片可能产生 0.2
-                    元以上的费用，图片将按比例缩放到总像素不超过
-                    8294400，请注意费用消耗。
-                  </span>
+                  <div>
+                    <div>开启 4K 后，Token 消耗是 2K 的 2~4 倍</div>
+                    <div>单张图片可能产生 0.2 元以上的费用</div>
+                    <div>图片将按比例缩放到总像素不超过 8294400</div>
+                    <div>更容易失败或命中高倍率的分组</div>
+                  </div>
                 </div>
               </Form.Item>
               <Form.Item>
@@ -126,10 +126,13 @@ export function openSettingModal(options?: {
                 </Form.Item>
                 <div className="text-red-500 text-xs flex items-start gap-1 mt-1">
                   <ExclamationCircleOutlined className="mt-1" />
-                  <span>
-                    High Token 消耗大约增大 4
-                    倍，处理小字扭曲等细节效果更好，但整体性价比远不如提升画面尺寸
-                  </span>
+                  <div>
+                    <div>High 画质处理小字扭曲等细节效果更好 </div>
+                    <div>
+                      但 Token 消耗大约变为 4倍，整体性价比远不如提升画面尺寸
+                    </div>
+                    <div>更容易失败或命中高倍率的分组</div>
+                  </div>
                 </div>
               </Form.Item>
             </Form>

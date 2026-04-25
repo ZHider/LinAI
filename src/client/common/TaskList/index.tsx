@@ -99,11 +99,9 @@ export function TaskList() {
           <div>输出 tokens: {outputTokens}</div>
           <div>输出预估费用: {cost2str(outputCost)}</div>
           <div>
-            以上为不考虑分组和画质、根据token消耗粗略计算，以实际扣费为准
+            以上不考虑分组和画质，仅根据token消耗粗略计算，以实际扣费为准
           </div>
-          <div>
-            实际费用根据分组可用性不同会有 1 ~ 1.5 倍波动，high 画质额外乘 4 倍
-          </div>
+          <div>实际费用根据分组可用性不同会有 1 ~ 3 倍波动</div>
         </div>
       )
 
