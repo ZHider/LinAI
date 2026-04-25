@@ -10,6 +10,7 @@ import logApi from './api/common/log'
 import gptImageApi from './api/gpt-image'
 import staticApi from './api/common/static'
 import configApi from './api/common/config'
+import * as fs from 'fs'
 
 const app = new Hono()
 
@@ -32,6 +33,11 @@ if (process.env.NODE_ENV !== 'development') {
   // Production serving of static files
   const clientPath = path.resolve(__dirname, '../client')
   app.use('/*', serveStatic({ root: clientPath }))
+}
+
+// 启动时没有 data 目录，从 data-template 复制
+if (!fs.existsSync('dist/data')) {
+  fs.cpSync('dist/data-template', 'dist/data')
 }
 
 serve(
