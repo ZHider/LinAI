@@ -1,6 +1,5 @@
 import { Modal, Switch, Typography } from 'antd'
 import { LogViewer } from '../components/LogViewer'
-import { TaskFromTemplate } from '../components/TaskFromTemplate'
 
 const { Text } = Typography
 
@@ -44,11 +43,6 @@ export function WanModal({
               className={autoSubmit ? 'bg-indigo-600' : 'bg-slate-300'}
             />
           </div>
-        </div>
-
-        {/* 任务管理 */}
-        <div className="border-t border-slate-100 pt-6">
-          <TaskFromTemplate usageType="video" />
         </div>
 
         {/* 日志查看器 */}

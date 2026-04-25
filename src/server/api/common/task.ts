@@ -1,43 +1,19 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
-import fs from 'fs-extra'
-import path from 'path'
 import { TaskManager } from '../../common/task-manager'
-import { templateManager } from '../../common/template-manager'
 
 export const taskManager = new TaskManager()
 const taskApi = new Hono()
   // Chain route declarations so Hono keeps the full client route map in AppType.
-  .get(
-    '/',
-    async (c) => {
-      try {
-        const tasks = await taskManager.getTasks()
-        return c.json({ success: true as const, data: tasks })
-      } catch (error: any) {
-        return c.json({ success: false as const, error: error.message }, 500)
-      }
+  .get('/', async (c) => {
+    try {
+      const tasks = await taskManager.getTasks()
+      return c.json({ success: true as const, data: tasks })
+    } catch (error: any) {
+      return c.json({ success: false as const, error: error.message }, 500)
     }
-  )
-  .post(
-    '/from-template',
-    zValidator('json', z.object({ templateId: z.string().min(1, 'templateId is required'), source: z.string().optional().default('unknown') })),
-    async (c) => {
-      try {
-        const { templateId, source } = c.req.valid('json')
-        const templates = await templateManager.getTemplates()
-        const template = templates.find((t) => t.id === templateId)
-        if (!template) {
-          return c.json({ success: false as const, error: 'Template not found' }, 404)
-        }
-        const newTask = await taskManager.createTaskFromTemplate(template, source)
-        return c.json({ success: true as const, data: newTask })
-      } catch (error: any) {
-        return c.json({ success: false as const, error: error.message }, 500)
-      }
-    }
-  )
+  })
   .delete(
     '/:id',
     zValidator('param', z.object({ id: z.string() })),
@@ -46,27 +22,18 @@ const taskApi = new Hono()
         const { id } = c.req.valid('param')
         const result = await taskManager.deleteTask(id)
         if (!result.success) {
-          return c.json({ success: false as const, error: result.error || 'Failed to delete task' }, 404)
+          return c.json(
+            {
+              success: false as const,
+              error: result.error || 'Failed to delete task'
+            },
+            404
+          )
         }
         return c.json({ success: true as const })
       } catch (error: any) {
         return c.json({ success: false as const, error: error.message }, 500)
       }
-    }
-  )
-  .get(
-    '/images/:filename',
-    zValidator('param', z.object({ filename: z.string() })),
-    async (c) => {
-      const { filename } = c.req.valid('param')
-      const filepath = path.join(process.cwd(), 'data', 'images', filename)
-      if (fs.existsSync(filepath)) {
-        const file = await fs.readFile(filepath)
-        const ext = path.extname(filename).slice(1)
-        c.header('Content-Type', `image/${ext === 'jpg' ? 'jpeg' : ext}`)
-        return c.body(file)
-      }
-      return c.notFound()
     }
   )
 

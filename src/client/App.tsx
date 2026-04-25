@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 // import { WanPreview } from './module/WanSection/WanPreview'
-// import { GPTImagePreview } from './module/GPTImageSection/GPTImagePreview'
 import { TemplateSection } from './common/TemplateSection'
 import { TaskList } from './common/TaskList'
 import { ThunderboltOutlined } from '@ant-design/icons'
@@ -45,7 +44,6 @@ function App() {
           <TaskList />
 
           {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <GPTImagePreview />
             <WanPreview />
           </div> */}
         </section>
