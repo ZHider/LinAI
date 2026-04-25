@@ -35,11 +35,6 @@ if (process.env.NODE_ENV !== 'development') {
   app.use('/*', serveStatic({ root: clientPath }))
 }
 
-// 启动时没有 data 目录，从 data-template 复制
-if (!fs.existsSync('dist/data')) {
-  fs.cpSync('dist/data-template', 'dist/data')
-}
-
 serve(
   {
     fetch: app.fetch,
