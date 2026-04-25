@@ -2,7 +2,7 @@ import { Button, Modal, Checkbox, message } from 'antd'
 import { DeleteOutlined } from '@ant-design/icons'
 import { useLocalStorageState } from 'ahooks'
 import { hc } from 'hono/client'
-import type { AppType } from '../../../server'
+import type { AppType } from '../../../../server'
 
 const client = hc<AppType>('/')
 
@@ -11,7 +11,7 @@ interface DeleteTaskButtonProps {
   onSuccess: () => void
 }
 
-export function DeleteTaskButton({ id, onSuccess }: DeleteTaskButtonProps) {
+export function TaskItemDeleteButton({ id, onSuccess }: DeleteTaskButtonProps) {
   const [skipDeleteConfirm, setSkipDeleteConfirm] = useLocalStorageState(
     'skipDeleteTaskConfirm',
     {

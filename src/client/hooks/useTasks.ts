@@ -18,8 +18,8 @@ export function useTasks() {
     },
     {
       cacheKey: 'global-tasks',
-      staleTime: 5000,
-      pollingInterval: 5000,
+      staleTime: 3000,
+      pollingInterval: 8000,
       onError: () => {
         console.error('Failed to fetch tasks')
       }

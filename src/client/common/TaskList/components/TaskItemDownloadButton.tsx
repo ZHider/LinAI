@@ -1,7 +1,7 @@
 import { Button, message } from 'antd'
 import { DownloadOutlined } from '@ant-design/icons'
 
-export const DownloadButton = ({
+export const TaskItemDownloadButton = ({
   outputUrl,
   fileName,
   onDownloaded

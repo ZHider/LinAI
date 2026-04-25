@@ -25,9 +25,9 @@ import {
   GPT_IMAGE_RMB_RATIO,
   MODEL_GROUP_RATIO
 } from '../../hooks/useGPTImageQuota'
-import { DeleteTaskButton } from './DeleteButton'
+import { TaskItemDeleteButton } from './components/TaskItemDeleteButton'
 import styles from './index.module.scss'
-import { DownloadButton } from './DownloadButton'
+import { TaskItemDownloadButton } from './components/TaskItemDownloadButton'
 import { TRIAL_TEMPLATE_TITLE } from '../../../server/common/template-manager/enum'
 import { GPT_IMAGE_SOURCE_MODEL } from '../../../server/common/gpt-image/enum'
 import { TaskListHeader } from './TaskListHeader'
@@ -226,7 +226,7 @@ export function TaskList() {
                   {/* Actions */}
                   <div className="flex justify-end items-center gap-1 mt-2">
                     {task.outputUrl && (
-                      <DownloadButton
+                      <TaskItemDownloadButton
                         outputUrl={task.outputUrl}
                         fileName={
                           task.rawTemplate?.title || task.rawTemplate.prompt
@@ -249,7 +249,14 @@ export function TaskList() {
                         loading={retryingIds.includes(task.id)}
                       />
                     )}
-                    <DeleteTaskButton id={task.id} onSuccess={fetchTasks} />
+                    <TaskItemDeleteButton
+                      id={task.id}
+                      onSuccess={() => {
+                        setTimeout(() => {
+                          fetchTasks()
+                        }, 500)
+                      }}
+                    />
                   </div>
                 </div>
               </div>
