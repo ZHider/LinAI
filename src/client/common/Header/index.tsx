@@ -1,5 +1,9 @@
 import LinpxLogo from '../../assets/icon/linpx.png'
-import { SettingOutlined, BellOutlined } from '@ant-design/icons'
+import {
+  SettingOutlined,
+  BellOutlined,
+  GithubOutlined
+} from '@ant-design/icons'
 import { openSettingModal } from '../SettingModal'
 import { openNotificationModal } from '../Notification'
 import { GPTImageQuota } from './GPTImageQuota'
@@ -36,6 +40,15 @@ export function Header() {
           >
             <SettingOutlined className="text-xl text-slate-600" />
           </div>
+          <a
+            className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 cursor-pointer transition-colors"
+            href="https://github.com/libudu/LinAI"
+            target="_blank"
+            rel="noreferrer"
+            title="GitHub 源码"
+          >
+            <GithubOutlined className="text-xl text-slate-600" />
+          </a>
         </div>
       </div>
     </header>
