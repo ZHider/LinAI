@@ -20,13 +20,13 @@ export function openNotificationModal() {
         key: 'important',
         label: '📢 重要说明',
         children: (
-          <div className="px-2 py-4 text-base text-gray-700">
-            <div className="mb-6 space-y-3">
+          <div>
+            <div className="mb-2 space-y-3">
               <div className="flex items-start">
                 <span className="mr-3 text-xl">🛡️</span>
                 <div className="leading-relaxed">
                   <span className="font-bold text-gray-900">数据隐私：</span>
-                  本工具后端在用户本地运行，本工具本身无任何第三方数据收集。仅在您使用开发者分享的
+                  本工具后端在用户本地运行，本身无任何第三方数据收集。仅在您使用开发者分享的
                   API Key 时，开发者能在 API
                   平台查看基本开销日志，不包含提示词或上传的图片等隐私内容。
                 </div>
@@ -35,7 +35,7 @@ export function openNotificationModal() {
                 <span className="mr-3 text-xl">⚠️</span>
                 <div className="leading-relaxed">
                   <span className="font-bold text-gray-900">充值建议：</span>
-                  本工具对接第三方平台服务，存在不可控因素。为保障您的资金安全，建议单次充值金额不要超过
+                  本工具对接第三方平台服务，存在不可控因素。为保障您的资金安全，建议单次充值金额不超过
                   10 元，单张 2k medium 仅 0.04 元左右，日常使用额度完全够用。
                 </div>
               </div>
@@ -69,7 +69,7 @@ export function openNotificationModal() {
               <div className="mb-1 text-lg text-gray-600">
                 ☕ 感谢赞助支持，可以备注你的昵称
               </div>
-              <div className="flex items-center justify-center">
+              <div className="flex items-center justify-center rounded-md bg-gray-200 p-2">
                 <Image src={QRCodeImg} alt="赞助二维码" width={200} />
               </div>
             </div>
@@ -80,23 +80,21 @@ export function openNotificationModal() {
         key: 'tips',
         label: '💡 使用技巧',
         children: (
-          <div className="px-2 py-4 text-base text-gray-700">
-            <div className="space-y-5">
-              <div className="flex items-start">
-                <span className="mr-3 text-xl">🎨</span>
-                <div className="leading-relaxed">
-                  <span className="font-bold text-gray-900">提示词技巧：</span>
-                  部分模型的文字审查机制较为严格（如 GPT Image
-                  2），建议优先采用“上传图片作为参考”的方式进行生成，以提高成功率。
-                </div>
+          <div className="space-y-5">
+            <div className="flex items-start">
+              <span className="mr-3 text-xl">🎨</span>
+              <div className="leading-relaxed">
+                <span className="font-bold text-gray-900">提示词技巧：</span>
+                部分模型的文字审查机制较为严格（如 GPT Image
+                2），建议优先采用“上传图片作为参考”的方式进行生成，以提高成功率。
               </div>
-              <div className="flex items-start">
-                <span className="mr-3 text-xl">📦</span>
-                <div className="leading-relaxed">
-                  <span className="font-bold text-gray-900">存储优化：</span>
-                  为节省磁盘空间，上传的图片在本地存储时将自动压缩为 WebP
-                  格式。您可以在系统设置中对此功能进行个性化配置。
-                </div>
+            </div>
+            <div className="flex items-start">
+              <span className="mr-3 text-xl">📦</span>
+              <div className="leading-relaxed">
+                <span className="font-bold text-gray-900">存储优化：</span>
+                为节省磁盘空间，上传的图片在本地存储时将自动压缩为 WebP
+                格式。您可以在系统设置中对此功能进行个性化配置。
               </div>
             </div>
           </div>
@@ -106,13 +104,11 @@ export function openNotificationModal() {
         key: 'errors',
         label: '🚨 错误提示',
         children: (
-          <div className="px-2 py-4 text-base">
-            <div className="flex items-start rounded-lg border border-red-100 bg-red-50 p-5">
-              <span className="mr-3 text-2xl">⚠️</span>
-              <div className="leading-relaxed text-red-800">
-                API
-                中转服务偶遇网络波动或请求拥堵时可能会出现报错。请仔细阅读具体报错信息，若因访问量过大导致，稍等片刻后重试即可恢复。
-              </div>
+          <div className="flex items-start rounded-lg border border-red-100 bg-red-50 p-5">
+            <span className="mr-3 text-2xl">⚠️</span>
+            <div className="leading-relaxed text-red-800">
+              API
+              中转服务偶遇网络波动或请求拥堵时可能会出现报错。请仔细阅读具体报错信息，若因访问量过大导致，稍等片刻后重试即可恢复。
             </div>
           </div>
         )
@@ -132,8 +128,13 @@ export function openNotificationModal() {
         destroyOnClose
         width={650}
       >
-        <div className="min-h-[350px] pt-2">
-          <Tabs items={items} defaultActiveKey="important" size="large" />
+        <div className="min-h-[350px]">
+          <Tabs
+            items={items}
+            defaultActiveKey="important"
+            size="large"
+            className="px-2 py-4 text-sm text-gray-700 sm:text-base!"
+          />
         </div>
       </Modal>
     )
