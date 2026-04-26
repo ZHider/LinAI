@@ -1,16 +1,16 @@
-import { useState, useRef } from 'react'
+import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 import { useLocalStorageState } from 'ahooks'
-import { PlusOutlined, LoadingOutlined } from '@ant-design/icons'
-import { Form, Input, Radio, Button, message, Image, Select } from 'antd'
+import { Button, Form, Image, Input, message, Radio, Select } from 'antd'
 import { hc } from 'hono/client'
+import { useRef, useState } from 'react'
 import type { AppType } from '../../../../server'
 import { openSettingModal } from '../../../common/SettingModal'
-import { useGlobalStore } from '../../../store/global'
 import { useLocalSetting } from '../../../hooks/useLocalSetting'
+import { useGlobalStore } from '../../../store/global'
 
-import { ImageUpload } from './ImageUpload'
 import type { GptImageSize } from '../../../../server/module/gpt-image/enum'
 import { useTasks } from '../../../hooks/useTasks'
+import { ImageUpload } from './ImageUpload'
 
 const client = hc<AppType>('/')
 
@@ -189,8 +189,8 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-      <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-slate-800">
         <PlusOutlined className="text-emerald-500" /> 新增模板
       </h3>
       <Form
@@ -215,7 +215,7 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
           <Radio.Group
             optionType="button"
             buttonStyle="solid"
-            className="w-full flex"
+            className="flex w-full"
           >
             <Radio.Button value="image" className="flex-1 text-center">
               图片生成
@@ -253,11 +253,11 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
         />
 
         {(trialImage || trialGenerating) && (
-          <div className="mb-4 p-4 bg-slate-50 rounded-lg border border-slate-100 flex flex-col items-center gap-2 relative group">
+          <div className="group relative mb-4 flex flex-col items-center gap-2 rounded-lg border border-slate-100 bg-slate-50 p-4">
             <span className="text-sm text-slate-500">试用生成结果：</span>
             {trialGenerating ? (
-              <div className="flex flex-col items-center justify-center h-[200px] w-full bg-slate-100 rounded-lg border border-slate-200 text-slate-400">
-                <LoadingOutlined className="text-3xl mb-2" />
+              <div className="flex h-[200px] w-full flex-col items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-slate-400">
+                <LoadingOutlined className="mb-2 text-3xl" />
                 <span className="text-sm">正在生成中...</span>
               </div>
             ) : trialImage ? (
@@ -273,14 +273,14 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
           </div>
         )}
 
-        <Form.Item className="mb-0! pt-4 border-t border-slate-100">
+        <Form.Item className="mb-0! border-t border-slate-100 pt-4">
           <div className="flex gap-4">
             {usageType === 'image' && gptImageSettings.enable1K && (
               <Button
                 onClick={() => handleTrial('1k')}
                 disabled={uploadingCount > 0}
                 size="large"
-                className="grow border-purple-300 text-purple-600 hover:text-purple-500 hover:border-purple-400"
+                className="grow border-purple-300 text-purple-600 hover:border-purple-400 hover:text-purple-500"
               >
                 生成1K图
               </Button>
@@ -290,7 +290,7 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
                 onClick={() => handleTrial('2k')}
                 disabled={uploadingCount > 0}
                 size="large"
-                className="grow border-purple-300 text-purple-600 hover:text-purple-500 hover:border-purple-400"
+                className="grow border-purple-300 text-purple-600 hover:border-purple-400 hover:text-purple-500"
               >
                 生成2K图
               </Button>

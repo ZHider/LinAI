@@ -1,6 +1,6 @@
-import { Switch } from 'antd'
 import { BellOutlined } from '@ant-design/icons'
 import { useLocalStorageState } from 'ahooks'
+import { Switch } from 'antd'
 import { useEffect, useRef } from 'react'
 import type { Task } from '../../../../server/common/task-manager'
 
@@ -62,7 +62,7 @@ export function TaskListFinishedAlertButton({
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-base text-gray-600 hidden sm:block">
+      <span className="hidden text-base text-gray-600 sm:block">
         <BellOutlined /> 完成提醒
       </span>
       <Switch

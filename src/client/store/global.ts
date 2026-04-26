@@ -1,5 +1,5 @@
-import { create } from 'zustand'
 import { hc } from 'hono/client'
+import { create } from 'zustand'
 import type { AppType } from '../../server'
 
 const client = hc<AppType>('/')

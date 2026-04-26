@@ -1,6 +1,6 @@
-import { useGlobalStore } from '../../store/global'
-import { useGPTImageQuota } from '../../hooks/useGPTImageQuota'
 import { Tooltip } from 'antd'
+import { useGPTImageQuota } from '../../hooks/useGPTImageQuota'
+import { useGlobalStore } from '../../store/global'
 
 export function GPTImageQuota() {
   const gptImageApiKey = useGlobalStore((state) => state.gptImageApiKey)
@@ -11,12 +11,12 @@ export function GPTImageQuota() {
   }
 
   return (
-    <div className="text-sm text-slate-600 bg-slate-50 px-3 py-1.5 rounded-md border border-slate-200">
+    <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-600">
       {loading ? (
         <span>正在获取余额...</span>
       ) : error ? (
         <Tooltip title={error}>
-          <span className="text-red-500 line-clamp-1 max-w-50">
+          <span className="line-clamp-1 max-w-50 text-red-500">
             GPT 余额: {error}
           </span>
         </Tooltip>

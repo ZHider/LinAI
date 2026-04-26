@@ -1,6 +1,6 @@
+import { EventEmitter } from 'events'
 import fs from 'fs-extra'
 import path from 'path'
-import { EventEmitter } from 'events'
 
 const LOG_DIR = './data/logs'
 

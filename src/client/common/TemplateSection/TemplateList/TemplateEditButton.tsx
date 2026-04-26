@@ -1,14 +1,14 @@
-import { useState } from 'react'
-import { Button, Modal, Form, message, Tooltip } from 'antd'
 import { EditOutlined } from '@ant-design/icons'
+import { Button, Form, message, Modal, Tooltip } from 'antd'
 import { hc } from 'hono/client'
+import { useState } from 'react'
 import type { AppType } from '../../../../server'
 import { TaskTemplate } from '../../../../server/common/template-manager'
 import { useTemplates } from '../../../hooks/useTemplates'
 import {
-  TitleFormItem,
   AspectRatioFormItem,
-  PromptFormItem
+  PromptFormItem,
+  TitleFormItem
 } from '../TemplateForm'
 
 const client = hc<AppType>('/')

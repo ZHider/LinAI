@@ -1,7 +1,7 @@
-import { useState } from 'react'
 import { UploadOutlined } from '@ant-design/icons'
 import { Button, message, Upload } from 'antd'
 import { hc } from 'hono/client'
+import { useState } from 'react'
 import type { AppType } from '../../../../server'
 
 const client = hc<AppType>('/')
@@ -107,13 +107,13 @@ export function ImageUpload({
           {value.map((url, index) => (
             <div
               key={index}
-              className="shrink-0 rounded-lg overflow-hidden border border-slate-200 shadow-sm bg-slate-100"
+              className="shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100 shadow-sm"
               style={{ width: '80px', height: '120px' }}
             >
               <img
                 src={url}
                 alt={`preview-${index}`}
-                className="w-full h-full object-cover"
+                className="h-full w-full object-cover"
               />
             </div>
           ))}

@@ -1,16 +1,16 @@
-import { Button, Popconfirm, Space, Tag, message, Tooltip } from 'antd'
 import { DeleteOutlined } from '@ant-design/icons'
+import { Button, message, Popconfirm, Space, Tag, Tooltip } from 'antd'
 import { hc } from 'hono/client'
 import type { AppType } from '../../../../server'
-import { useGlobalStore } from '../../../store/global'
-import { openSettingModal } from '../../../common/SettingModal'
 import { TaskTemplate } from '../../../../server/common/template-manager'
+import type { GptImageSize } from '../../../../server/module/gpt-image/enum'
+import openaiIcon from '../../../assets/icon/openai.svg'
+import { openSettingModal } from '../../../common/SettingModal'
+import { useLocalSetting } from '../../../hooks/useLocalSetting'
 import { useTasks } from '../../../hooks/useTasks'
 import { useTemplates } from '../../../hooks/useTemplates'
-import openaiIcon from '../../../assets/icon/openai.svg'
+import { useGlobalStore } from '../../../store/global'
 import { TemplateEditButton } from './TemplateEditButton'
-import { useLocalSetting } from '../../../hooks/useLocalSetting'
-import type { GptImageSize } from '../../../../server/module/gpt-image/enum'
 
 const client = hc<AppType>('/')
 
@@ -74,7 +74,7 @@ export const TemplateItemHeader = ({
   }
 
   return (
-    <div className="flex justify-between items-center">
+    <div className="flex items-center justify-between">
       <Space size={4}>
         <Tag
           color={template.usageType === 'image' ? 'blue' : 'purple'}
@@ -88,15 +88,15 @@ export const TemplateItemHeader = ({
           </Tag>
         )}
       </Space>
-      <div className="flex gap-1 items-center">
+      <div className="flex items-center gap-1">
         {template.usageType === 'image' && (
           <>
             {gptImageSettings.enable1K && (
               <Tooltip title="GPTImage2 生成 1K 图">
                 <Button
                   type="text"
-                  className="text-slate-500 hover:text-purple-600 hover:bg-purple-50 flex items-center justify-center px-2!"
-                  icon={<img src={openaiIcon} className="w-4 h-4 opacity-70" />}
+                  className="flex items-center justify-center px-2! text-slate-500 hover:bg-purple-50 hover:text-purple-600"
+                  icon={<img src={openaiIcon} className="h-4 w-4 opacity-70" />}
                   onClick={() => handleGenerate(template.id, '1k')}
                 >
                   1K
@@ -107,8 +107,8 @@ export const TemplateItemHeader = ({
               <Tooltip title="GPTImage2 生成 2K 图">
                 <Button
                   type="text"
-                  className="text-slate-500 hover:text-purple-600 hover:bg-purple-50 flex items-center justify-center px-2!"
-                  icon={<img src={openaiIcon} className="w-4 h-4 opacity-70" />}
+                  className="flex items-center justify-center px-2! text-slate-500 hover:bg-purple-50 hover:text-purple-600"
+                  icon={<img src={openaiIcon} className="h-4 w-4 opacity-70" />}
                   onClick={() => handleGenerate(template.id, '2k')}
                 >
                   2K
@@ -119,8 +119,8 @@ export const TemplateItemHeader = ({
               <Tooltip title="GPTImage2 生成 4K 图">
                 <Button
                   type="text"
-                  className="text-slate-500 hover:text-purple-600 hover:bg-purple-50 flex items-center justify-center px-2!"
-                  icon={<img src={openaiIcon} className="w-4 h-4 opacity-70" />}
+                  className="flex items-center justify-center px-2! text-slate-500 hover:bg-purple-50 hover:text-purple-600"
+                  icon={<img src={openaiIcon} className="h-4 w-4 opacity-70" />}
                   onClick={() => handleGenerate(template.id, '4k')}
                 >
                   4K

@@ -27,12 +27,12 @@ export function WanModal({
     >
       <div className="flex flex-col gap-6 py-4">
         {/* 自动提交开关 */}
-        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+        <div className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-4">
           <div className="flex flex-col pr-4">
             <Text strong className="text-sm text-slate-800">
               自动提交任务
             </Text>
-            <Text className="text-xs text-slate-500 mt-1">
+            <Text className="mt-1 text-xs text-slate-500">
               开启后将自动轮询并提交新的下载任务
             </Text>
           </div>

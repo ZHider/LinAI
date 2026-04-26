@@ -1,15 +1,14 @@
-import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
+import { Hono } from 'hono'
+import { streamSSE } from 'hono/streaming'
 import { z } from 'zod'
 import { logger } from '../../module/utils/logger'
-import { streamSSE } from 'hono/streaming'
 
 const logApi = new Hono()
   .get(
     '/:moduleId',
     zValidator('param', z.object({ moduleId: z.string() })),
     (c) => {
-
       return streamSSE(c, async (stream) => {
         // 发送初始日志
         const initialLogs = logger.getLogs(100)

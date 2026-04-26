@@ -1,17 +1,17 @@
-import { useState, useEffect, useMemo } from 'react'
+import { KeyOutlined, PictureOutlined } from '@ant-design/icons'
 import {
-  Modal,
+  Button,
+  Card,
   Form,
   Input,
-  Button,
   message,
-  Card,
+  Modal,
+  Space,
   Spin,
-  Tag,
-  Space
+  Tag
 } from 'antd'
-import { KeyOutlined, PictureOutlined } from '@ant-design/icons'
 import { hc } from 'hono/client'
+import { useEffect, useMemo, useState } from 'react'
 import type { AppType } from '../../../server/index'
 import { useTemplates } from '../../hooks/useTemplates'
 
@@ -101,7 +101,7 @@ export function GeminiModal({ open, onClose }: GeminiModalProps) {
       width={800}
       destroyOnClose
     >
-      <div className="py-4 flex flex-col gap-6">
+      <div className="flex flex-col gap-6 py-4">
         <Card
           size="small"
           title={
@@ -110,10 +110,10 @@ export function GeminiModal({ open, onClose }: GeminiModalProps) {
               API 配置
             </span>
           }
-          className="shadow-sm border-slate-200"
+          className="border-slate-200 shadow-sm"
         >
           <Form form={form} layout="inline" className="flex items-center gap-2">
-            <Form.Item name="apiKey" className="flex-1 mb-0">
+            <Form.Item name="apiKey" className="mb-0 flex-1">
               <Input.Password placeholder="输入 Gemini API Key" />
             </Form.Item>
             <Form.Item className="mb-0">
@@ -125,8 +125,8 @@ export function GeminiModal({ open, onClose }: GeminiModalProps) {
         </Card>
 
         <div className="flex flex-col gap-4">
-          <div className="flex justify-between items-center">
-            <h4 className="text-md font-medium text-slate-800 m-0">
+          <div className="flex items-center justify-between">
+            <h4 className="text-md m-0 font-medium text-slate-800">
               Gemini 模板 ({templates.length})
             </h4>
             <Button size="small" onClick={fetchTemplates} loading={loading}>
@@ -135,41 +135,41 @@ export function GeminiModal({ open, onClose }: GeminiModalProps) {
           </div>
 
           {loading ? (
-            <div className="py-12 flex justify-center">
+            <div className="flex justify-center py-12">
               <Spin />
             </div>
           ) : templates.length === 0 ? (
-            <div className="py-12 text-center text-slate-400 bg-slate-50 rounded-xl border border-slate-100">
-              <PictureOutlined className="text-4xl mb-2 text-slate-300" />
+            <div className="rounded-xl border border-slate-100 bg-slate-50 py-12 text-center text-slate-400">
+              <PictureOutlined className="mb-2 text-4xl text-slate-300" />
               <p>暂无 Gemini 模板，请先在左侧添加</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2">
+            <div className="grid max-h-[500px] grid-cols-1 gap-4 overflow-y-auto pr-2 md:grid-cols-2">
               {templates.map((item) => (
                 <Card
                   key={item.id}
                   size="small"
-                  className="shadow-sm border-slate-200 hover:shadow-md transition-shadow"
+                  className="border-slate-200 shadow-sm transition-shadow hover:shadow-md"
                 >
                   <div className="flex flex-col gap-3">
                     <div className="flex gap-3">
-                      <div className="w-20 h-20 shrink-0 rounded-md overflow-hidden bg-slate-100 border border-slate-200 relative">
+                      <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md border border-slate-200 bg-slate-100">
                         {item.images && item.images.length > 0 && (
                           <img
                             src={item.images[0]}
                             alt="template"
-                            className="w-full h-full object-cover"
+                            className="h-full w-full object-cover"
                           />
                         )}
                       </div>
-                      <div className="flex-1 min-w-0 flex flex-col">
-                        <div className="flex justify-between items-start mb-1">
+                      <div className="flex min-w-0 flex-1 flex-col">
+                        <div className="mb-1 flex items-start justify-between">
                           <Space size={[0, 4]} wrap>
                             <Tag color="blue">图片模板</Tag>
                           </Space>
                         </div>
                         <p
-                          className="text-sm text-slate-600 line-clamp-2 mt-1"
+                          className="mt-1 line-clamp-2 text-sm text-slate-600"
                           title={item.prompt}
                         >
                           {item.prompt}
@@ -177,7 +177,7 @@ export function GeminiModal({ open, onClose }: GeminiModalProps) {
                       </div>
                     </div>
 
-                    <div className="pt-2 border-t border-slate-100 flex justify-between items-center">
+                    <div className="flex items-center justify-between border-t border-slate-100 pt-2">
                       <span className="text-xs text-slate-400">
                         {new Date(item.createdAt).toLocaleString()}
                       </span>
@@ -193,16 +193,16 @@ export function GeminiModal({ open, onClose }: GeminiModalProps) {
                     </div>
 
                     {generatedImages[item.id] && (
-                      <div className="mt-2 rounded-lg overflow-hidden border border-slate-200 relative group">
-                        <div className="absolute top-1 left-1 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm z-10">
+                      <div className="group relative mt-2 overflow-hidden rounded-lg border border-slate-200">
+                        <div className="absolute top-1 left-1 z-10 rounded bg-black/50 px-2 py-1 text-xs text-white backdrop-blur-sm">
                           生成结果
                         </div>
                         <img
                           src={generatedImages[item.id]}
                           alt="generated"
-                          className="w-full h-auto object-contain"
+                          className="h-auto w-full object-contain"
                         />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
                           <Button
                             type="primary"
                             ghost

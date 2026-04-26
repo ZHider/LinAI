@@ -1,5 +1,5 @@
-import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
+import { Hono } from 'hono'
 import { z } from 'zod'
 import { templateManager } from '../../common/template-manager'
 
@@ -69,7 +69,10 @@ const templateApi = new Hono()
       try {
         const { id } = c.req.valid('param')
         const updates = c.req.valid('json')
-        const updatedTemplate = await templateManager.updateTemplate(id, updates)
+        const updatedTemplate = await templateManager.updateTemplate(
+          id,
+          updates
+        )
         if (!updatedTemplate) {
           return c.json(
             { success: false as const, error: 'Template not found' },

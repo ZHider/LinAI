@@ -1,5 +1,5 @@
-import { createRoot } from 'react-dom/client'
 import { Image, Modal, Tabs, message } from 'antd'
+import { createRoot } from 'react-dom/client'
 import QRCodeImg from '../../assets/image/qrcode.jpg'
 
 export function openNotificationModal() {
@@ -20,8 +20,8 @@ export function openNotificationModal() {
         key: 'important',
         label: '📢 重要说明',
         children: (
-          <div className="py-4 px-2 text-base text-gray-700">
-            <div className="space-y-3 mb-6">
+          <div className="px-2 py-4 text-base text-gray-700">
+            <div className="mb-6 space-y-3">
               <div className="flex items-start">
                 <span className="mr-3 text-xl">🛡️</span>
                 <div className="leading-relaxed">
@@ -51,7 +51,7 @@ export function openNotificationModal() {
                 <div className="leading-relaxed">
                   <span className="font-bold text-gray-900">工具交流群：</span>
                   <span
-                    className="cursor-pointer text-blue-500 hover:text-blue-600 underline font-medium"
+                    className="cursor-pointer font-medium text-blue-500 underline hover:text-blue-600"
                     onClick={() => {
                       navigator.clipboard.writeText('1098503823')
                       message.success('群号已复制')
@@ -59,14 +59,14 @@ export function openNotificationModal() {
                   >
                     1098503823
                   </span>
-                  <span className="text-gray-400 text-sm ml-2 select-none">
+                  <span className="ml-2 text-sm text-gray-400 select-none">
                     (点击复制)
                   </span>
                 </div>
               </div>
             </div>
             <div className="flex flex-col items-center">
-              <div className="text-gray-600 mb-1 text-lg">
+              <div className="mb-1 text-lg text-gray-600">
                 ☕ 感谢赞助支持，可以备注你的昵称
               </div>
               <div className="flex items-center justify-center">
@@ -80,7 +80,7 @@ export function openNotificationModal() {
         key: 'tips',
         label: '💡 使用技巧',
         children: (
-          <div className="py-4 px-2 text-base text-gray-700">
+          <div className="px-2 py-4 text-base text-gray-700">
             <div className="space-y-5">
               <div className="flex items-start">
                 <span className="mr-3 text-xl">🎨</span>
@@ -106,10 +106,10 @@ export function openNotificationModal() {
         key: 'errors',
         label: '🚨 错误提示',
         children: (
-          <div className="py-4 px-2 text-base">
-            <div className="bg-red-50 p-5 rounded-lg border border-red-100 flex items-start">
+          <div className="px-2 py-4 text-base">
+            <div className="flex items-start rounded-lg border border-red-100 bg-red-50 p-5">
               <span className="mr-3 text-2xl">⚠️</span>
-              <div className="text-red-800 leading-relaxed">
+              <div className="leading-relaxed text-red-800">
                 API
                 中转服务偶遇网络波动或请求拥堵时可能会出现报错。请仔细阅读具体报错信息，若因访问量过大导致，稍等片刻后重试即可恢复。
               </div>
@@ -122,7 +122,7 @@ export function openNotificationModal() {
     return (
       <Modal
         title={
-          <span className="text-xl font-semibold flex items-center gap-2">
+          <span className="flex items-center gap-2 text-xl font-semibold">
             <span>🔔</span> 通知与说明
           </span>
         }
@@ -132,7 +132,7 @@ export function openNotificationModal() {
         destroyOnClose
         width={650}
       >
-        <div className="pt-2 min-h-[350px]">
+        <div className="min-h-[350px] pt-2">
           <Tabs items={items} defaultActiveKey="important" size="large" />
         </div>
       </Modal>

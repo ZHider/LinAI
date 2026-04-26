@@ -8,7 +8,7 @@ export function ImageGroup({ images }: ImageGroupProps) {
   if (!images || images.length === 0) return null
 
   return (
-    <div className="w-24 h-24 shrink-0 relative ml-2">
+    <div className="relative ml-2 h-24 w-24 shrink-0">
       <Image.PreviewGroup>
         {images.map((url, index) => {
           const isFirst = index === 0
@@ -20,7 +20,7 @@ export function ImageGroup({ images }: ImageGroupProps) {
           return (
             <div
               key={index}
-              className="absolute rounded-md overflow-hidden bg-slate-100 border border-slate-200 shadow-sm transition-all duration-300 ease-in-out hover:!z-50 hover:scale-105 cursor-pointer"
+              className="absolute cursor-pointer overflow-hidden rounded-md border border-slate-200 bg-slate-100 shadow-sm transition-all duration-300 ease-in-out hover:!z-50 hover:scale-105"
               style={{
                 width: '64px',
                 height: '96px',

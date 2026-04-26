@@ -4,7 +4,7 @@ import { logger } from '../utils/logger'
 export class GeminiManager {
   private static instance: GeminiManager
 
-  private constructor() { }
+  private constructor() {}
 
   public static getInstance(): GeminiManager {
     if (!GeminiManager.instance) {
@@ -23,7 +23,7 @@ export class GeminiManager {
         prompt: prompt,
         config: {
           numberOfImages: 1,
-          outputMimeType: 'image/jpeg',
+          outputMimeType: 'image/jpeg'
         }
       })
 

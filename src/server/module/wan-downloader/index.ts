@@ -1,8 +1,8 @@
-import { WanxClient } from './api'
-import { Downloader } from './downloader'
-import { config } from './config'
 import { logger } from '../utils/logger'
+import { WanxClient } from './api'
 import { wanAuthManager } from './auth'
+import { config } from './config'
+import { Downloader } from './downloader'
 
 export class WanxBot {
   private client: WanxClient

@@ -1,12 +1,11 @@
-import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
+import { Hono } from 'hono'
 import { v4 as uuidv4 } from 'uuid'
 import { z } from 'zod'
-import { templateManager } from '../common/template-manager'
-import { TaskTemplate } from '../common/template-manager'
-import { handleImageGeneration } from '../module/gpt-image'
 import { getConfig } from '../common/config'
+import { TaskTemplate, templateManager } from '../common/template-manager'
 import { TRIAL_TEMPLATE_TITLE } from '../common/template-manager/enum'
+import { handleImageGeneration } from '../module/gpt-image'
 
 export interface GPTImageQuotaResponse {
   message: string

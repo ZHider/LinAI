@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from 'react'
 import { hc } from 'hono/client'
+import { useEffect, useRef, useState } from 'react'
 import type { AppType } from '../../../server/index'
 
 const client = hc<AppType>('/')
@@ -58,18 +58,18 @@ export function LogViewer({ moduleId, title = '系统日志' }: LogViewerProps) 
   }, [logs])
 
   return (
-    <div className="flex flex-col bg-slate-900 rounded-lg overflow-hidden border border-slate-700">
-      <div className="bg-slate-800 px-4 py-2 flex justify-between items-center border-b border-slate-700">
-        <span className="text-slate-200 font-mono text-sm">{title}</span>
+    <div className="flex flex-col overflow-hidden rounded-lg border border-slate-700 bg-slate-900">
+      <div className="flex items-center justify-between border-b border-slate-700 bg-slate-800 px-4 py-2">
+        <span className="font-mono text-sm text-slate-200">{title}</span>
         <span className="flex items-center gap-2">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500"></span>
           </span>
-          <span className="text-green-500 text-xs font-mono">Connected</span>
+          <span className="font-mono text-xs text-green-500">Connected</span>
           <button
             onClick={clearLogs}
-            className="text-[12px] px-2 py-0.5 flex items-center bg-slate-700 hover:bg-slate-600 text-slate-400 hover:text-slate-200 rounded border border-slate-600 transition-colors"
+            className="flex items-center rounded border border-slate-600 bg-slate-700 px-2 py-0.5 text-[12px] text-slate-400 transition-colors hover:bg-slate-600 hover:text-slate-200"
           >
             清空
           </button>
@@ -77,7 +77,7 @@ export function LogViewer({ moduleId, title = '系统日志' }: LogViewerProps) 
       </div>
       <div
         ref={scrollRef}
-        className="p-4 overflow-y-auto font-mono text-xs text-slate-300 space-y-1 h-[300px]"
+        className="h-[300px] space-y-1 overflow-y-auto p-4 font-mono text-xs text-slate-300"
       >
         {logs.length === 0 ? (
           <div className="text-slate-500 italic">等待日志输出...</div>
@@ -85,7 +85,7 @@ export function LogViewer({ moduleId, title = '系统日志' }: LogViewerProps) 
           logs.map((log, index) => (
             <div
               key={index}
-              className="break-all whitespace-pre-wrap hover:bg-slate-800 px-1 rounded"
+              className="rounded px-1 break-all whitespace-pre-wrap hover:bg-slate-800"
             >
               {log}
             </div>

@@ -1,9 +1,9 @@
-import fs from 'fs-extra'
 import axios from 'axios'
+import fs from 'fs-extra'
 import path from 'path'
+import { logger } from '../utils/logger'
 import { config } from './config'
 import type { TaskData } from './types'
-import { logger } from '../utils/logger'
 
 export class Downloader {
   private records: Record<string, any> = {}

@@ -1,7 +1,7 @@
-import { Card, Tooltip } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
-import { ImageGroup } from './ImageGroup'
+import { Card, Tooltip } from 'antd'
 import { TaskTemplate } from '../../../../server/common/template-manager'
+import { ImageGroup } from './ImageGroup'
 import { TemplateItemHeader } from './TemplateItemHeader'
 
 interface TemplateItemListProps {
@@ -10,13 +10,13 @@ interface TemplateItemListProps {
 
 export function TemplateItemList({ filteredTemplates }: TemplateItemListProps) {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full flex-col">
       <div
         className="flex-1 overflow-y-auto pr-2"
         style={{ maxHeight: '550px' }}
       >
         {filteredTemplates.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-slate-400 space-y-4 border-2 border-dashed border-slate-100 rounded-xl bg-slate-50/50">
+          <div className="flex flex-col items-center justify-center space-y-4 rounded-xl border-2 border-dashed border-slate-100 bg-slate-50/50 py-12 text-slate-400">
             <InboxOutlined className="text-5xl text-slate-300" />
             <p className="text-sm font-medium">该分类下暂无模板内容</p>
           </div>
@@ -26,26 +26,26 @@ export function TemplateItemList({ filteredTemplates }: TemplateItemListProps) {
               <Card
                 key={template.id}
                 size="small"
-                className="shadow-sm hover:shadow-md transition-shadow"
+                className="shadow-sm transition-shadow hover:shadow-md"
               >
                 <div className="flex gap-4">
                   <ImageGroup images={template.images || []} />
-                  <div className="flex-1 min-w-0 flex flex-col gap-1">
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
                     <TemplateItemHeader template={template} />
                     {template.title && (
                       <div
-                        className="font-bold text-slate-800 truncate"
+                        className="truncate font-bold text-slate-800"
                         title={template.title}
                       >
                         {template.title}
                       </div>
                     )}
                     <Tooltip title={template.prompt} placement="bottom">
-                      <p className="text-sm text-slate-600 line-clamp-2 cursor-default m-0">
+                      <p className="m-0 line-clamp-2 cursor-default text-sm text-slate-600">
                         {template.prompt}
                       </p>
                     </Tooltip>
-                    <div className="mt-auto text-xs text-slate-400 pt-1">
+                    <div className="mt-auto pt-1 text-xs text-slate-400">
                       {new Date(template.createdAt).toLocaleString()}
                     </div>
                   </div>

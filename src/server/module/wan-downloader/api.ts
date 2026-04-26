@@ -1,8 +1,8 @@
 import axios from 'axios'
-import { config } from './config'
-import type { PagingListResponse, ImageGenResponse } from './types'
 import { logger } from '../utils/logger'
 import { wanAuthManager } from './auth'
+import { config } from './config'
+import type { ImageGenResponse, PagingListResponse } from './types'
 
 export class WanxClient {
   private async getHeaders() {

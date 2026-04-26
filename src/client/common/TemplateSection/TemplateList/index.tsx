@@ -1,5 +1,5 @@
-import { useState, forwardRef, useImperativeHandle } from 'react'
 import { Spin } from 'antd'
+import { forwardRef, useImperativeHandle, useState } from 'react'
 import { useTemplates } from '../../../hooks/useTemplates'
 import { TemplateFolder } from './TemplateFolder'
 import { TemplateItemList } from './TemplateItemList'
@@ -43,20 +43,20 @@ export const TemplateList = forwardRef<TemplateListRef, unknown>((_, ref) => {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 pr-4 flex flex-col h-full">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold text-slate-800 m-0 flex items-center">
+    <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 pr-4 shadow-sm">
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="m-0 flex items-center text-lg font-semibold text-slate-800">
           {selectedSource === null ? (
             `所有模板 (${templates.length})`
           ) : (
             <>
               <span
-                className="cursor-pointer hover:text-blue-600 transition-colors text-slate-500"
+                className="cursor-pointer text-slate-500 transition-colors hover:text-blue-600"
                 onClick={() => setSelectedSource(null)}
               >
                 所有模板 ({templates.length})
               </span>
-              <span className="text-slate-400 font-normal mx-2">/</span>
+              <span className="mx-2 font-normal text-slate-400">/</span>
               <span>
                 {selectedSource === 'video' ? '视频' : '图片'}模板 (
                 {templates.filter((t) => t.usageType === selectedSource).length}
@@ -68,7 +68,7 @@ export const TemplateList = forwardRef<TemplateListRef, unknown>((_, ref) => {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center h-40">
+        <div className="flex h-40 items-center justify-center">
           <Spin />
         </div>
       ) : (

@@ -1,6 +1,6 @@
 import fs from 'fs-extra'
-import path from 'path'
 import JSZip from 'jszip'
+import path from 'path'
 
 async function run() {
   const rootDir = path.resolve(__dirname, '..')

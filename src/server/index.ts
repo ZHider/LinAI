@@ -1,15 +1,15 @@
-import { Hono } from 'hono'
 import { serve } from '@hono/node-server'
 import { serveStatic } from '@hono/node-server/serve-static'
+import { Hono } from 'hono'
 import * as path from 'path'
-import wanApi from './api/wan'
-import geminiApi from './api/gemini'
+import configApi from './api/common/config'
+import logApi from './api/common/log'
+import staticApi from './api/common/static'
 import taskApi from './api/common/task'
 import templateApi from './api/common/template'
-import logApi from './api/common/log'
+import geminiApi from './api/gemini'
 import gptImageApi from './api/gpt-image'
-import staticApi from './api/common/static'
-import configApi from './api/common/config'
+import wanApi from './api/wan'
 
 const app = new Hono()
 

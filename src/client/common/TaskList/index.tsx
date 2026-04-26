@@ -1,16 +1,16 @@
-import { Card, Typography, Button, Image, Tooltip, List, message } from 'antd'
 import { RedoOutlined } from '@ant-design/icons'
 import { useLocalStorageState } from 'ahooks'
+import { Button, Card, Image, List, message, Tooltip, Typography } from 'antd'
 import { hc } from 'hono/client'
 import type { AppType } from '../../../server'
 import type { Task } from '../../../server/common/task-manager'
-import { useTasks } from '../../hooks/useTasks'
-import { TaskItemDeleteButton } from './components/TaskItemDeleteButton'
-import styles from './index.module.scss'
-import { TaskItemDownloadButton } from './components/TaskItemDownloadButton'
 import { TRIAL_TEMPLATE_TITLE } from '../../../server/common/template-manager/enum'
 import { GPT_IMAGE_SOURCE_MODEL } from '../../../server/module/gpt-image/enum'
+import { useTasks } from '../../hooks/useTasks'
+import { TaskItemDeleteButton } from './components/TaskItemDeleteButton'
+import { TaskItemDownloadButton } from './components/TaskItemDownloadButton'
 import { TaskItemTags } from './components/TaskItemTags'
+import styles from './index.module.scss'
 import { TaskListHeader } from './TaskListHeader'
 
 const client = hc<AppType>('/')
@@ -41,7 +41,7 @@ export function TaskList() {
 
   return (
     <Card
-      className="w-full shadow-sm border-slate-200"
+      className="w-full border-slate-200 shadow-sm"
       styles={{ body: { paddingTop: 0 } }}
     >
       <TaskListHeader
@@ -64,11 +64,11 @@ export function TaskList() {
             <Card size="small" className="w-full shadow-sm">
               <div className="flex gap-4">
                 {/* Left: Image Preview */}
-                <div className="shrink-0 w-28 h-36 relative border border-gray-100 rounded overflow-hidden flex items-center justify-center bg-gray-50">
+                <div className="relative flex h-36 w-28 shrink-0 items-center justify-center overflow-hidden rounded border border-gray-100 bg-gray-50">
                   {task.status === 'failed' && task.error ? (
                     <Typography.Text
                       type="danger"
-                      className="text-xs text-center p-2"
+                      className="p-2 text-center text-xs"
                       ellipsis={{ tooltip: task.error }}
                     >
                       {task.error}
@@ -90,7 +90,7 @@ export function TaskList() {
                 </div>
 
                 {/* Right: Info and Actions */}
-                <div className="flex-grow flex flex-col justify-between overflow-hidden min-w-0">
+                <div className="flex min-w-0 flex-grow flex-col justify-between overflow-hidden">
                   <div>
                     {/* Tags */}
                     <TaskItemTags
@@ -102,7 +102,7 @@ export function TaskList() {
                     {task.rawTemplate?.title && (
                       <Typography.Text
                         strong
-                        className="block mb-1 truncate"
+                        className="mb-1 block truncate"
                         title={task.rawTemplate.title}
                       >
                         {task.rawTemplate.title}
@@ -113,7 +113,7 @@ export function TaskList() {
                     {task.rawTemplate?.prompt && (
                       <Typography.Paragraph
                         type="secondary"
-                        className="text-xs mb-0!"
+                        className="mb-0! text-xs"
                         ellipsis={{ rows: 2, tooltip: task.rawTemplate.prompt }}
                       >
                         {task.rawTemplate.prompt}
@@ -122,7 +122,7 @@ export function TaskList() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex justify-between items-center gap-1 mt-2">
+                  <div className="mt-2 flex items-center justify-between gap-1">
                     <div className="text-xs text-slate-400">
                       {new Date(task.createdAt).toLocaleString()}
                     </div>

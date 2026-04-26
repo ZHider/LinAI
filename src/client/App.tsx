@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
 // import { WanPreview } from './module/WanSection/WanPreview'
-import { TemplateSection } from './common/TemplateSection'
-import { TaskList } from './common/TaskList'
 import { ThunderboltOutlined } from '@ant-design/icons'
-import { Header } from './common/Header'
-import { useGlobalStore } from './store/global'
-import { openNotificationModal } from './common/Notification'
 import pkg from '../../package.json'
+import { Header } from './common/Header'
+import { openNotificationModal } from './common/Notification'
+import { TaskList } from './common/TaskList'
+import { TemplateSection } from './common/TemplateSection'
+import { useGlobalStore } from './store/global'
 
 function App() {
   useEffect(() => {
@@ -26,13 +26,13 @@ function App() {
       <Header />
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto p-6 pt-0 space-y-4">
+      <main className="mx-auto max-w-6xl space-y-4 p-6 pt-0">
         {/* 任务编排 */}
-        <div className="flex items-center gap-2 mt-4">
-          <div className="p-2 bg-emerald-100 rounded-lg text-emerald-600 flex items-center justify-center">
+        <div className="mt-4 flex items-center gap-2">
+          <div className="flex items-center justify-center rounded-lg bg-emerald-100 p-2 text-emerald-600">
             <ThunderboltOutlined className="text-xl" />
           </div>
-          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-800">
             快速开始
           </h2>
         </div>

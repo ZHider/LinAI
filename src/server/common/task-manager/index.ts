@@ -1,9 +1,9 @@
 import fs from 'fs-extra'
 import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
-import { TaskTemplate } from '../template-manager'
-import { Logger } from '../../module/utils/logger'
 import { GptImageQuality, GptImageSize } from '../../module/gpt-image/enum'
+import { Logger } from '../../module/utils/logger'
+import { TaskTemplate } from '../template-manager'
 
 export interface Task {
   id: string

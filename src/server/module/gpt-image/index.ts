@@ -1,17 +1,17 @@
-import { taskManager } from '../../api/common/task'
-import { TaskTemplate } from '../../common/template-manager'
-import { logger } from '../utils/logger'
+import crypto from 'crypto'
+import fs from 'fs-extra'
+import { writeFile } from 'fs/promises'
+import OpenAI, { toFile } from 'openai'
+import path from 'path'
 import {
   GENERATED_IMAGES_API_PATH,
   GENERATED_IMAGES_DIR,
   INPUT_IMAGES_DIR
 } from '../../api/common/static'
-import fs from 'fs-extra'
-import path from 'path'
-import crypto from 'crypto'
-import { GPT_IMAGE_SOURCE_MODEL, GptImageSize, GptImageQuality } from './enum'
-import { writeFile } from 'fs/promises'
-import OpenAI, { toFile } from 'openai'
+import { taskManager } from '../../api/common/task'
+import { TaskTemplate } from '../../common/template-manager'
+import { logger } from '../utils/logger'
+import { GPT_IMAGE_SOURCE_MODEL, GptImageQuality, GptImageSize } from './enum'
 
 interface GPTImageResponse {
   created: number

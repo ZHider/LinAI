@@ -1,8 +1,8 @@
+import { Form, Input, message, Modal, Radio, Switch, Tabs } from 'antd'
 import { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { Modal, Form, Input, message, Tabs, Switch, Radio } from 'antd'
-import { useGlobalStore } from '../../store/global'
 import { useLocalSetting } from '../../hooks/useLocalSetting'
+import { useGlobalStore } from '../../store/global'
 
 import { ExclamationCircleOutlined } from '@ant-design/icons'
 
@@ -75,7 +75,7 @@ export function openSettingModal(options?: {
         key: 'gpt-image',
         label: 'GPTImage2 配置',
         children: (
-          <div className="py-2 px-4">
+          <div className="px-4 py-2">
             <Form form={form} layout="vertical">
               <Form.Item
                 name="apiKey"
@@ -85,8 +85,8 @@ export function openSettingModal(options?: {
                 <Input.Password placeholder="输入 t8star API Key" />
               </Form.Item>
               <Form.Item>
-                <div className="text-sm text-gray-500 mb-2">生成尺寸</div>
-                <div className="flex justify-between items-center">
+                <div className="mb-2 text-sm text-gray-500">生成尺寸</div>
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-lg">
                     <span>1K</span>
                     <Form.Item name="enable1K" valuePropName="checked" noStyle>
@@ -106,7 +106,7 @@ export function openSettingModal(options?: {
                     </Form.Item>
                   </div>
                 </div>
-                <div className="text-red-500 text-xs flex items-start gap-1 mt-1">
+                <div className="mt-1 flex items-start gap-1 text-xs text-red-500">
                   <ExclamationCircleOutlined className="mt-1" />
                   <div>
                     <div>开启 4K 后，Token 消耗是 2K 的 2~4 倍</div>
@@ -117,14 +117,14 @@ export function openSettingModal(options?: {
                 </div>
               </Form.Item>
               <Form.Item>
-                <div className="text-sm text-gray-500 mb-2">画质设置</div>
+                <div className="mb-2 text-sm text-gray-500">画质设置</div>
                 <Form.Item name="quality" noStyle>
                   <Radio.Group>
                     <Radio.Button value="medium">Medium</Radio.Button>
                     <Radio.Button value="high">High</Radio.Button>
                   </Radio.Group>
                 </Form.Item>
-                <div className="text-red-500 text-xs flex items-start gap-1 mt-1">
+                <div className="mt-1 flex items-start gap-1 text-xs text-red-500">
                   <ExclamationCircleOutlined className="mt-1" />
                   <div>
                     <div>High 画质处理小字扭曲等细节效果更好 </div>
@@ -152,7 +152,7 @@ export function openSettingModal(options?: {
         destroyOnClose
         width={600}
       >
-        <div className="pt-4 min-h-[200px]">
+        <div className="min-h-[200px] pt-4">
           <Tabs
             tabPosition="left"
             activeKey={activeTab}

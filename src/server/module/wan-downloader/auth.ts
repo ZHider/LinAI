@@ -1,9 +1,9 @@
-import { chromium } from 'playwright'
-import { config } from './config'
-import { logger } from '../utils/logger'
-import path from 'path'
-import fs from 'fs-extra'
 import axios from 'axios'
+import fs from 'fs-extra'
+import path from 'path'
+import { chromium } from 'playwright'
+import { logger } from '../utils/logger'
+import { config } from './config'
 
 export class WanAuthManager {
   private static instance: WanAuthManager

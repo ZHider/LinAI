@@ -1,10 +1,10 @@
-import { Tag, Tooltip } from 'antd'
 import {
-  SyncOutlined,
   CheckCircleOutlined,
+  ClockCircleOutlined,
   CloseCircleOutlined,
-  ClockCircleOutlined
+  SyncOutlined
 } from '@ant-design/icons'
+import { Tag, Tooltip } from 'antd'
 import type { Task } from '../../../../server/common/task-manager'
 import {
   GPT_IMAGE_RMB_RATIO,
@@ -79,7 +79,7 @@ export function TaskItemTags({ task, downloadedIds }: TaskItemTagsProps) {
   }
 
   return (
-    <div className="flex flex-wrap gap-1 mb-2">
+    <div className="mb-2 flex flex-wrap gap-1">
       {task.status !== 'completed' && renderStatus(task.status)}
       <Tag color="purple">
         {task.rawTemplate?.usageType === 'image' ? '图片' : '视频'}
