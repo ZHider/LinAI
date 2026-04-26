@@ -2,7 +2,10 @@ import { InboxOutlined } from '@ant-design/icons'
 import { Card, Tooltip } from 'antd'
 import { TaskTemplate } from '../../../../server/common/template-manager'
 import { ImageGroup } from './ImageGroup'
-import { TemplateItemHeader } from './TemplateItemHeader'
+import {
+  TemplateItemGenerateButtons,
+  TemplateItemHeader
+} from './TemplateItemHeader'
 
 interface TemplateItemListProps {
   filteredTemplates: TaskTemplate[]
@@ -47,6 +50,9 @@ export function TemplateItemList({ filteredTemplates }: TemplateItemListProps) {
                     </Tooltip>
                     <div className="mt-auto pt-1 text-xs text-slate-400">
                       {new Date(template.createdAt).toLocaleString()}
+                    </div>
+                    <div className="flex justify-end sm:hidden">
+                      <TemplateItemGenerateButtons template={template} />
                     </div>
                   </div>
                 </div>

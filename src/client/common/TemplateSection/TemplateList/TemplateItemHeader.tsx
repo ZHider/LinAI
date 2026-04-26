@@ -1,6 +1,7 @@
 import { DeleteOutlined } from '@ant-design/icons'
 import { Button, message, Popconfirm, Space, Tag, Tooltip } from 'antd'
 import { hc } from 'hono/client'
+import React from 'react'
 import type { AppType } from '../../../../server'
 import { TaskTemplate } from '../../../../server/common/template-manager'
 import type { GptImageSize } from '../../../../server/module/gpt-image/enum'
@@ -14,15 +15,12 @@ import { TemplateEditButton } from './TemplateEditButton'
 
 const client = hc<AppType>('/')
 
-export const TemplateItemHeader = ({
-  template
-}: {
+export const TemplateItemGenerateButtons: React.FC<{
   template: TaskTemplate
-}) => {
+}> = ({ template }) => {
+  const { gptImageSettings } = useLocalSetting()
   const gptImageApiKey = useGlobalStore((state) => state.gptImageApiKey)
   const { refresh } = useTasks()
-  const { refresh: refreshTemplates } = useTemplates()
-  const { gptImageSettings } = useLocalSetting()
 
   const doGenerate = async (templateId: string, size: GptImageSize) => {
     message.success('任务提交成功')
@@ -57,6 +55,56 @@ export const TemplateItemHeader = ({
 
     doGenerate(templateId, size)
   }
+  return (
+    template.usageType === 'image' && (
+      <>
+        {gptImageSettings.enable1K && (
+          <Tooltip title="GPTImage2 生成 1K 图">
+            <Button
+              type="text"
+              className="flex items-center justify-center px-2! text-slate-500 hover:bg-purple-50 hover:text-purple-600"
+              icon={<img src={openaiIcon} className="h-4 w-4 opacity-70" />}
+              onClick={() => handleGenerate(template.id, '1k')}
+            >
+              1K
+            </Button>
+          </Tooltip>
+        )}
+        {gptImageSettings.enable2K && (
+          <Tooltip title="GPTImage2 生成 2K 图">
+            <Button
+              type="text"
+              className="flex items-center justify-center px-2! text-slate-500 hover:bg-purple-50 hover:text-purple-600"
+              icon={<img src={openaiIcon} className="h-4 w-4 opacity-70" />}
+              onClick={() => handleGenerate(template.id, '2k')}
+            >
+              2K
+            </Button>
+          </Tooltip>
+        )}
+        {gptImageSettings.enable4K && (
+          <Tooltip title="GPTImage2 生成 4K 图">
+            <Button
+              type="text"
+              className="flex items-center justify-center px-2! text-slate-500 hover:bg-purple-50 hover:text-purple-600"
+              icon={<img src={openaiIcon} className="h-4 w-4 opacity-70" />}
+              onClick={() => handleGenerate(template.id, '4k')}
+            >
+              4K
+            </Button>
+          </Tooltip>
+        )}
+      </>
+    )
+  )
+}
+
+export const TemplateItemHeader = ({
+  template
+}: {
+  template: TaskTemplate
+}) => {
+  const { refresh: refreshTemplates } = useTemplates()
 
   const handleDelete = async (id: string) => {
     try {
@@ -74,73 +122,38 @@ export const TemplateItemHeader = ({
   }
 
   return (
-    <div className="flex items-center justify-between">
-      <Space size={4}>
-        <Tag
-          color={template.usageType === 'image' ? 'blue' : 'purple'}
-          className="m-0"
-        >
-          {template.usageType === 'image' ? '图片' : '视频'}
-        </Tag>
-        {template.aspectRatio && (
-          <Tag color="default" className="m-0">
-            {template.aspectRatio}
+    <div>
+      <div className="flex items-center justify-between">
+        <Space size={4}>
+          <Tag
+            color={template.usageType === 'image' ? 'blue' : 'purple'}
+            className="m-0"
+          >
+            {template.usageType === 'image' ? '图片' : '视频'}
           </Tag>
-        )}
-      </Space>
-      <div className="flex items-center gap-1">
-        {template.usageType === 'image' && (
-          <>
-            {gptImageSettings.enable1K && (
-              <Tooltip title="GPTImage2 生成 1K 图">
-                <Button
-                  type="text"
-                  className="flex items-center justify-center px-2! text-slate-500 hover:bg-purple-50 hover:text-purple-600"
-                  icon={<img src={openaiIcon} className="h-4 w-4 opacity-70" />}
-                  onClick={() => handleGenerate(template.id, '1k')}
-                >
-                  1K
-                </Button>
-              </Tooltip>
-            )}
-            {gptImageSettings.enable2K && (
-              <Tooltip title="GPTImage2 生成 2K 图">
-                <Button
-                  type="text"
-                  className="flex items-center justify-center px-2! text-slate-500 hover:bg-purple-50 hover:text-purple-600"
-                  icon={<img src={openaiIcon} className="h-4 w-4 opacity-70" />}
-                  onClick={() => handleGenerate(template.id, '2k')}
-                >
-                  2K
-                </Button>
-              </Tooltip>
-            )}
-            {gptImageSettings.enable4K && (
-              <Tooltip title="GPTImage2 生成 4K 图">
-                <Button
-                  type="text"
-                  className="flex items-center justify-center px-2! text-slate-500 hover:bg-purple-50 hover:text-purple-600"
-                  icon={<img src={openaiIcon} className="h-4 w-4 opacity-70" />}
-                  onClick={() => handleGenerate(template.id, '4k')}
-                >
-                  4K
-                </Button>
-              </Tooltip>
-            )}
-          </>
-        )}
-        <TemplateEditButton template={template} />
-        <Popconfirm
-          title="确定要删除该模板吗？"
-          onConfirm={() => handleDelete(template.id)}
-          okText="确定"
-          cancelText="取消"
-          okButtonProps={{ danger: true }}
-        >
-          <Tooltip title="删除模板">
-            <Button type="text" danger icon={<DeleteOutlined />} />
-          </Tooltip>
-        </Popconfirm>
+          {template.aspectRatio && (
+            <Tag color="default" className="m-0">
+              {template.aspectRatio}
+            </Tag>
+          )}
+          <div className="hidden sm:flex">
+            <TemplateItemGenerateButtons template={template} />
+          </div>
+        </Space>
+        <div className="flex items-center gap-1">
+          <TemplateEditButton template={template} />
+          <Popconfirm
+            title="确定要删除该模板吗？"
+            onConfirm={() => handleDelete(template.id)}
+            okText="确定"
+            cancelText="取消"
+            okButtonProps={{ danger: true }}
+          >
+            <Tooltip title="删除模板">
+              <Button type="text" danger icon={<DeleteOutlined />} />
+            </Tooltip>
+          </Popconfirm>
+        </div>
       </div>
     </div>
   )

@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 // import { WanPreview } from './module/WanSection/WanPreview'
-import { ThunderboltOutlined } from '@ant-design/icons'
 import pkg from '../../package.json'
 import { Header } from './common/Header'
 import { openNotificationModal } from './common/Notification'
@@ -26,17 +25,7 @@ function App() {
       <Header />
 
       {/* Main Content */}
-      <main className="mx-auto max-w-6xl space-y-4 p-6 pt-0">
-        {/* 任务编排 */}
-        <div className="mt-4 flex items-center gap-2">
-          <div className="flex items-center justify-center rounded-lg bg-emerald-100 p-2 text-emerald-600">
-            <ThunderboltOutlined className="text-xl" />
-          </div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-800">
-            快速开始
-          </h2>
-        </div>
-
+      <main className="mx-auto max-w-6xl space-y-4 p-4 sm:p-6">
         <TemplateSection />
 
         <section className="space-y-4">

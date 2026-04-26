@@ -143,12 +143,10 @@ export function TaskListHeader({
     <div className="mt-4 mb-4 flex items-center justify-between">
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center rounded-lg bg-blue-100 p-2 text-blue-600">
+          <div className="hidden items-center justify-center rounded-lg bg-blue-100 p-2 text-blue-600 sm:flex">
             <ScheduleOutlined className="text-xl" />
           </div>
-          <h2 className="m-0 hidden text-2xl font-bold tracking-tight text-slate-800 sm:block">
-            任务列表
-          </h2>
+          <h2 className="text-lg font-bold">任务列表</h2>
         </div>
 
         <Space className="ml-4">
