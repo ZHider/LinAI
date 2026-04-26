@@ -1,7 +1,7 @@
-import { UploadOutlined } from '@ant-design/icons'
-import { Button, message, Upload } from 'antd'
+import { CloseCircleFilled, UploadOutlined } from '@ant-design/icons'
+import { Image as AntImage, Button, message, Upload } from 'antd'
 import { hc } from 'hono/client'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { AppType } from '../../../../server'
 
 const client = hc<AppType>('/')
@@ -48,6 +48,9 @@ export function ImageUpload({
 }: ImageUploadProps) {
   const [_, setUploadingCount] = useState(0)
 
+  const latestValueRef = useRef(value)
+  latestValueRef.current = value
+
   const handleUploadCountChange = (delta: number) => {
     setUploadingCount((c) => {
       const newCount = Math.max(0, c + delta)
@@ -61,7 +64,7 @@ export function ImageUpload({
     reader.onload = async (e) => {
       const base64 = e.target?.result as string
 
-      if (value.length === 0 && onFirstImageRatio) {
+      if (latestValueRef.current.length === 0 && onFirstImageRatio) {
         const img = new Image()
         img.onload = () => {
           const ratio = getClosestAspectRatio(img.width, img.height)
@@ -77,7 +80,9 @@ export function ImageUpload({
         })
         const data = await res.json()
         if (data.success && 'url' in data) {
-          onChange?.([...value, data.url as string])
+          const newUrls = [...latestValueRef.current, data.url as string]
+          latestValueRef.current = newUrls
+          onChange?.(newUrls)
           message.success('图片上传成功')
         } else {
           message.error((data as any).error || '图片上传失败')
@@ -92,6 +97,43 @@ export function ImageUpload({
     return false
   }
 
+  const handleUploadRef = useRef(handleUpload)
+  handleUploadRef.current = handleUpload
+
+  useEffect(() => {
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
+    const handleDrop = (e: DragEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      const files = e.dataTransfer?.files
+      if (files && files.length > 0) {
+        Array.from(files).forEach((file) => {
+          if (file.type.startsWith('image/')) {
+            handleUploadRef.current(file)
+          }
+        })
+      }
+    }
+
+    window.addEventListener('dragover', handleDragOver)
+    window.addEventListener('drop', handleDrop)
+
+    return () => {
+      window.removeEventListener('dragover', handleDragOver)
+      window.removeEventListener('drop', handleDrop)
+    }
+  }, [])
+
+  const handleRemove = (indexToRemove: number) => {
+    const newUrls = value.filter((_, i) => i !== indexToRemove)
+    latestValueRef.current = newUrls
+    onChange?.(newUrls)
+  }
+
   return (
     <div>
       <Upload
@@ -100,20 +142,32 @@ export function ImageUpload({
         beforeUpload={handleUpload}
         multiple
       >
-        <Button icon={<UploadOutlined />}>选择多张图片</Button>
+        <Button icon={<UploadOutlined />}>拖入或选择多张图片</Button>
       </Upload>
       {value.length > 0 && (
         <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
           {value.map((url, index) => (
             <div
               key={index}
-              className="shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100 shadow-sm"
+              className="relative shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100 shadow-sm"
               style={{ width: '80px', height: '120px' }}
             >
-              <img
+              <div
+                className="absolute top-0 right-1 z-10 cursor-pointer text-xl text-red-500 drop-shadow-md transition-all"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleRemove(index)
+                }}
+              >
+                <CloseCircleFilled />
+              </div>
+              <AntImage
                 src={url}
                 alt={`preview-${index}`}
-                className="h-full w-full object-cover"
+                width={80}
+                height={120}
+                className="object-cover"
+                preview={{ src: url }}
               />
             </div>
           ))}
