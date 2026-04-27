@@ -14,8 +14,11 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "incremental": true,
+    "types": ["node", "react", "react-dom"]
   },
   "include": ["src"],
+  "exclude": ["node_modules", "dist", "dist-template", "data-template", "public"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
