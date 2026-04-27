@@ -155,23 +155,53 @@ export function TaskListHeader({
           刷新
         </Button>
 
-        <Space.Compact>
-          <TaskListDownloadButton
-            tasks={tasks}
-            downloadedIds={downloadedIds}
-            setDownloadedIds={setDownloadedIds}
-          />
-
-          <Dropdown
-            menu={{ items: deleteMenuItems, onClick: onMenuClick }}
-            placement="bottomRight"
-          >
-            <Button
-              icon={<EllipsisOutlined />}
-              loading={deletingErrors || deletingDownloaded}
+        <div className="hidden md:block">
+          <Space.Compact>
+            <TaskListDownloadButton
+              tasks={tasks}
+              downloadedIds={downloadedIds}
+              setDownloadedIds={setDownloadedIds}
             />
-          </Dropdown>
-        </Space.Compact>
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              onClick={handleDeleteErrors}
+              loading={deletingErrors}
+              disabled={deletingErrors || deletingDownloaded}
+            >
+              所有错误任务
+            </Button>
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              onClick={handleDeleteDownloaded}
+              loading={deletingDownloaded}
+              disabled={deletingErrors || deletingDownloaded}
+            >
+              所有已下载任务
+            </Button>
+          </Space.Compact>
+        </div>
+
+        <div className="block md:hidden">
+          <Space.Compact>
+            <TaskListDownloadButton
+              tasks={tasks}
+              downloadedIds={downloadedIds}
+              setDownloadedIds={setDownloadedIds}
+            />
+
+            <Dropdown
+              menu={{ items: deleteMenuItems, onClick: onMenuClick }}
+              placement="bottomRight"
+            >
+              <Button
+                icon={<EllipsisOutlined />}
+                loading={deletingErrors || deletingDownloaded}
+              />
+            </Dropdown>
+          </Space.Compact>
+        </div>
       </div>
     </div>
   )
