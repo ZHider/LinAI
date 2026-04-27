@@ -119,12 +119,12 @@ export function ImageUpload({
       }
     }
 
-    window.addEventListener('dragover', handleDragOver)
-    window.addEventListener('drop', handleDrop)
+    window.addEventListener('dragover', handleDragOver, { capture: true })
+    window.addEventListener('drop', handleDrop, { capture: true })
 
     return () => {
-      window.removeEventListener('dragover', handleDragOver)
-      window.removeEventListener('drop', handleDrop)
+      window.removeEventListener('dragover', handleDragOver, { capture: true })
+      window.removeEventListener('drop', handleDrop, { capture: true })
     }
   }, [])
 
