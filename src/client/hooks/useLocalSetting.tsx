@@ -1,5 +1,6 @@
-import { useLocalStorageState } from 'ahooks'
 import { useMemo } from 'react'
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import type { GptImageQuality } from '../../server/module/gpt-image/enum'
 
 export interface GPTImageSettings {
@@ -16,11 +17,36 @@ export const defaultGPTImageSettings: GPTImageSettings = {
   quality: 'medium'
 }
 
+interface LocalSettingState {
+  gptImageSettings: GPTImageSettings
+  setGptImageSettings: (
+    settings: GPTImageSettings | ((prev: GPTImageSettings) => GPTImageSettings)
+  ) => void
+}
+
+const useLocalSettingStore = create<LocalSettingState>()(
+  persist(
+    (set) => ({
+      gptImageSettings: defaultGPTImageSettings,
+      setGptImageSettings: (settings) =>
+        set((state) => ({
+          gptImageSettings:
+            typeof settings === 'function'
+              ? settings(state.gptImageSettings)
+              : settings
+        }))
+    }),
+    {
+      name: 'gpt-image-settings'
+    }
+  )
+)
+
 export function useLocalSetting() {
-  const [gptImageSettings, setGptImageSettings] =
-    useLocalStorageState<GPTImageSettings>('gpt-image-settings', {
-      defaultValue: defaultGPTImageSettings
-    })
+  const gptImageSettings = useLocalSettingStore((state) => state.gptImageSettings)
+  const setGptImageSettings = useLocalSettingStore(
+    (state) => state.setGptImageSettings
+  )
 
   const mergedSettings = useMemo(
     () => ({ ...defaultGPTImageSettings, ...gptImageSettings }),
