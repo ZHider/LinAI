@@ -10,6 +10,7 @@ export interface TaskTemplate {
   createdAt: number
   usageType: 'image' | 'video'
   aspectRatio?: string
+  folder?: string
 }
 
 export interface GeminiTaskTemplate extends TaskTemplate {
@@ -83,7 +84,7 @@ class TemplateManager {
 
   public async updateTemplate(
     id: string,
-    updates: Partial<Pick<TaskTemplate, 'title' | 'prompt' | 'aspectRatio'>>
+    updates: Partial<Pick<TaskTemplate, 'title' | 'prompt' | 'aspectRatio' | 'folder'>>
   ): Promise<TaskTemplate | null> {
     const templates = await this.getTemplates()
     const index = templates.findIndex((t) => t.id === id)

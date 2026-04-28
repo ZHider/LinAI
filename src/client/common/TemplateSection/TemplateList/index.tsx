@@ -12,6 +12,7 @@ export const TemplateList = forwardRef<TemplateListRef, unknown>((_, ref) => {
   const [selectedSource, setSelectedSource] = useState<
     'video' | 'image' | null
   >(null)
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null)
 
   const { data: templates = [], loading, refresh } = useTemplates()
 
@@ -39,7 +40,13 @@ export const TemplateList = forwardRef<TemplateListRef, unknown>((_, ref) => {
       .filter((t) => t.usageType === selectedSource)
       .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
 
-    return <TemplateItemList filteredTemplates={filteredTemplates} />
+    return (
+      <TemplateItemList
+        filteredTemplates={filteredTemplates}
+        selectedFolder={selectedFolder}
+        onSelectFolder={setSelectedFolder}
+      />
+    )
   }
 
   return (
@@ -52,16 +59,50 @@ export const TemplateList = forwardRef<TemplateListRef, unknown>((_, ref) => {
             <>
               <span
                 className="cursor-pointer text-slate-500 transition-colors hover:text-blue-600"
-                onClick={() => setSelectedSource(null)}
+                onClick={() => {
+                  setSelectedSource(null)
+                  setSelectedFolder(null)
+                }}
               >
                 所有模板 ({templates.length})
               </span>
               <span className="mx-2 font-normal text-slate-400">/</span>
-              <span>
-                {selectedSource === 'video' ? '视频' : '图片'}模板 (
-                {templates.filter((t) => t.usageType === selectedSource).length}
-                )
-              </span>
+              {selectedFolder ? (
+                <>
+                  <span
+                    className="cursor-pointer text-slate-500 transition-colors hover:text-blue-600"
+                    onClick={() => setSelectedFolder(null)}
+                  >
+                    {selectedSource === 'video' ? '视频' : '图片'}模板 (
+                    {
+                      templates.filter((t) => t.usageType === selectedSource)
+                        .length
+                    }
+                    )
+                  </span>
+                  <span className="mx-2 font-normal text-slate-400">/</span>
+                  <span>
+                    {selectedFolder} (
+                    {
+                      templates.filter(
+                        (t) =>
+                          t.usageType === selectedSource &&
+                          t.folder === selectedFolder
+                      ).length
+                    }
+                    )
+                  </span>
+                </>
+              ) : (
+                <span>
+                  {selectedSource === 'video' ? '视频' : '图片'}模板 (
+                  {
+                    templates.filter((t) => t.usageType === selectedSource)
+                      .length
+                  }
+                  )
+                </span>
+              )}
             </>
           )}
         </h3>

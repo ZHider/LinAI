@@ -22,7 +22,8 @@ const templateApi = new Hono()
         images: z.array(z.string()),
         prompt: z.string(),
         usageType: z.enum(['image', 'video']),
-        aspectRatio: z.string().optional()
+        aspectRatio: z.string().optional(),
+        folder: z.string().optional()
       })
     ),
     async (c) => {
@@ -62,7 +63,8 @@ const templateApi = new Hono()
       z.object({
         title: z.string().optional(),
         prompt: z.string().optional(),
-        aspectRatio: z.string().optional()
+        aspectRatio: z.string().optional(),
+        folder: z.string().optional()
       })
     ),
     async (c) => {

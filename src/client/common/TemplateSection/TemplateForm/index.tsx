@@ -231,18 +231,23 @@ export function TemplateForm({ onSuccess }: TemplateFormProps) {
           <AspectRatioFormItem className="w-1/3" />
         </div>
 
-        <Form.Item label="上传图片">
-          <ImageUpload
-            value={imageUrls}
-            onChange={setImageUrls}
-            onUploadingChange={(isUploading) =>
-              setUploadingCount(isUploading ? 1 : 0)
-            }
-            onFirstImageRatio={(ratio) => {
-              form.setFieldsValue({ aspectRatio: ratio })
-            }}
-          />
-        </Form.Item>
+        <div className="flex gap-4">
+          <Form.Item label="上传图片" className="flex-1">
+            <ImageUpload
+              value={imageUrls}
+              onChange={setImageUrls}
+              onUploadingChange={(isUploading) =>
+                setUploadingCount(isUploading ? 1 : 0)
+              }
+              onFirstImageRatio={(ratio) => {
+                form.setFieldsValue({ aspectRatio: ratio })
+              }}
+            />
+          </Form.Item>
+          <Form.Item name="folder" label="分类" className="w-1/3">
+            <Input placeholder="输入分类名称" />
+          </Form.Item>
+        </div>
 
         <PromptFormItem
           label={

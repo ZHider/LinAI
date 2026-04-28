@@ -148,6 +148,7 @@ export const TemplateItemHeader = ({
             okText="确定"
             cancelText="取消"
             okButtonProps={{ danger: true }}
+            placement="bottom"
           >
             <Tooltip title="删除模板">
               <Button type="text" danger icon={<DeleteOutlined />} />
