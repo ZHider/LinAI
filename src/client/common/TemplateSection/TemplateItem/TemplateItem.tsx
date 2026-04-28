@@ -9,15 +9,19 @@ import {
 
 interface TemplateItemProps {
   template: TaskTemplate
+  draggable?: boolean
 }
 
-export function TemplateItem({ template }: TemplateItemProps) {
+export function TemplateItem({
+  template,
+  draggable = false
+}: TemplateItemProps) {
   return (
     <Card size="small" className="shadow-sm transition-shadow hover:shadow-md">
       <div className="flex gap-2">
         <ImageGroup images={template.images || []} />
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <TemplateItemHeader template={template} />
+          <TemplateItemHeader template={template} draggable={draggable} />
           {template.title && (
             <div
               className="truncate font-bold text-slate-800"

@@ -1,7 +1,13 @@
 import { InboxOutlined } from '@ant-design/icons'
+import { message } from 'antd'
+import { hc } from 'hono/client'
+import type { AppType } from '../../../../server'
 import { TaskTemplate } from '../../../../server/common/template-manager'
+import { useTemplates } from '../../../hooks/useTemplates'
 import { TemplateFolder } from '../TemplateItem/TemplateFolder'
 import { TemplateItem } from '../TemplateItem/TemplateItem'
+
+const client = hc<AppType>('/')
 
 interface TemplateItemListProps {
   filteredTemplates: TaskTemplate[]
@@ -14,6 +20,26 @@ export function TemplateItemList({
   selectedFolder,
   onSelectFolder
 }: TemplateItemListProps) {
+  const { refresh: refreshTemplates } = useTemplates()
+
+  const handleDropTemplate = async (templateId: string, folder: string) => {
+    try {
+      const res = await client.api.template[':id'].$put({
+        param: { id: templateId },
+        json: { folder }
+      })
+      const json = await res.json()
+      if (json.success) {
+        message.success('已移动到文件夹')
+        refreshTemplates()
+      } else {
+        message.error(json.error || '移动失败')
+      }
+    } catch (error) {
+      message.error('请求失败')
+    }
+  }
+
   const folders = Array.from(
     new Set(filteredTemplates.map((t) => t.folder).filter(Boolean))
   ) as string[]
@@ -22,7 +48,9 @@ export function TemplateItemList({
     ? filteredTemplates.filter((t) => t.folder === selectedFolder)
     : filteredTemplates.filter((t) => !t.folder)
 
-  const displayFolders = selectedFolder ? [] : folders
+  const displayFolders = selectedFolder
+    ? []
+    : folders.sort((a, b) => a.localeCompare(b))
 
   return (
     <div className="flex h-full flex-col">
@@ -49,6 +77,7 @@ export function TemplateItemList({
                       folder={folder}
                       count={count}
                       onClick={() => onSelectFolder(folder)}
+                      onDropTemplate={handleDropTemplate}
                     />
                   )
                 })}
@@ -56,7 +85,11 @@ export function TemplateItemList({
             )}
 
             {displayTemplates.map((template) => (
-              <TemplateItem key={template.id} template={template} />
+              <TemplateItem
+                key={template.id}
+                template={template}
+                draggable={!selectedFolder}
+              />
             ))}
           </div>
         )}

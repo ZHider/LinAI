@@ -1,4 +1,4 @@
-import { DeleteOutlined } from '@ant-design/icons'
+import { DeleteOutlined, HolderOutlined } from '@ant-design/icons'
 import { Button, message, Popconfirm, Space, Tag, Tooltip } from 'antd'
 import { hc } from 'hono/client'
 import React from 'react'
@@ -100,9 +100,11 @@ export const TemplateItemGenerateButtons: React.FC<{
 }
 
 export const TemplateItemHeader = ({
-  template
+  template,
+  draggable
 }: {
   template: TaskTemplate
+  draggable: boolean
 }) => {
   const { refresh: refreshTemplates } = useTemplates()
 
@@ -154,6 +156,21 @@ export const TemplateItemHeader = ({
               <Button type="text" danger icon={<DeleteOutlined />} />
             </Tooltip>
           </Popconfirm>
+          {draggable && (
+            <div
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData(
+                  'application/json',
+                  JSON.stringify({ type: 'template', id: template.id })
+                )
+                e.dataTransfer.effectAllowed = 'move'
+              }}
+              className="flex cursor-move items-center justify-center px-1 text-slate-400 transition-colors hover:text-slate-600"
+            >
+              <HolderOutlined />
+            </div>
+          )}
         </div>
       </div>
     </div>

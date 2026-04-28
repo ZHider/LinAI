@@ -102,20 +102,30 @@ export function ImageUpload({
 
   useEffect(() => {
     const handleDragOver = (e: DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
+      if (
+        e.dataTransfer?.types &&
+        Array.from(e.dataTransfer.types).includes('Files')
+      ) {
+        e.preventDefault()
+        e.stopPropagation()
+      }
     }
 
     const handleDrop = (e: DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      const files = e.dataTransfer?.files
-      if (files && files.length > 0) {
-        Array.from(files).forEach((file) => {
-          if (file.type.startsWith('image/')) {
-            handleUploadRef.current(file)
-          }
-        })
+      if (
+        e.dataTransfer?.types &&
+        Array.from(e.dataTransfer.types).includes('Files')
+      ) {
+        e.preventDefault()
+        e.stopPropagation()
+        const files = e.dataTransfer?.files
+        if (files && files.length > 0) {
+          Array.from(files).forEach((file) => {
+            if (file.type.startsWith('image/')) {
+              handleUploadRef.current(file)
+            }
+          })
+        }
       }
     }
 
