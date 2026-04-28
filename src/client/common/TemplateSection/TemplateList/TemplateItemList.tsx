@@ -2,11 +2,11 @@ import { FolderOutlined, InboxOutlined } from '@ant-design/icons'
 import { Card, Tooltip, message } from 'antd'
 import copy from 'copy-to-clipboard'
 import { TaskTemplate } from '../../../../server/common/template-manager'
-import { ImageGroup } from './ImageGroup'
 import {
   TemplateItemGenerateButtons,
   TemplateItemHeader
-} from './TemplateItemHeader'
+} from '../TemplateItem/TemplateItemHeader'
+import { ImageGroup } from './ImageGroup'
 
 interface TemplateItemListProps {
   filteredTemplates: TaskTemplate[]

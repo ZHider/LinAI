@@ -6,11 +6,11 @@ import type { AppType } from '../../../../server'
 import { TaskTemplate } from '../../../../server/common/template-manager'
 import type { GptImageSize } from '../../../../server/module/gpt-image/enum'
 import openaiIcon from '../../../assets/icon/openai.svg'
-import { openSettingModal } from '../../../common/SettingModal'
 import { useLocalSetting } from '../../../hooks/useLocalSetting'
 import { useTasks } from '../../../hooks/useTasks'
 import { useTemplates } from '../../../hooks/useTemplates'
 import { useGlobalStore } from '../../../store/global'
+import { openSettingModal } from '../../SettingModal'
 import { TemplateEditButton } from './TemplateItemEditButton'
 
 const client = hc<AppType>('/')
