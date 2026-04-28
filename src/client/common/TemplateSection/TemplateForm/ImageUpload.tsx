@@ -1,4 +1,5 @@
 import { CloseCircleFilled, UploadOutlined } from '@ant-design/icons'
+import { useLocalStorageState } from 'ahooks'
 import { Image as AntImage, Button, message, Upload } from 'antd'
 import { hc } from 'hono/client'
 import { useEffect, useRef, useState } from 'react'
@@ -40,6 +41,42 @@ function getClosestAspectRatio(width: number, height: number) {
   return closest.value
 }
 
+const LOCAL_STORAGE_KEY = 'recent_uploaded_images'
+
+function RecentImages({
+  recentImages,
+  currentValue,
+  onSelect,
+  onRemove
+}: {
+  recentImages: string[]
+  currentValue: string[]
+  onSelect: (url: string) => void
+  onRemove: (url: string) => void
+}) {
+  const displayImages = recentImages
+    .filter((url) => !currentValue.includes(url))
+    .slice(0, 3)
+
+  if (displayImages.length === 0) return null
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-sm text-slate-400">最近:</span>
+      {displayImages.map((url) => (
+        <img
+          key={url}
+          src={url}
+          alt="recent"
+          className="h-8 w-8 cursor-pointer rounded border border-slate-200 object-cover transition-colors hover:border-blue-500"
+          onClick={() => onSelect(url)}
+          onError={() => onRemove(url)}
+        />
+      ))}
+    </div>
+  )
+}
+
 export function ImageUpload({
   value = [],
   onChange,
@@ -47,6 +84,17 @@ export function ImageUpload({
   onFirstImageRatio
 }: ImageUploadProps) {
   const [_, setUploadingCount] = useState(0)
+  const [recentImages = [], setRecentImages] = useLocalStorageState<string[]>(
+    LOCAL_STORAGE_KEY,
+    { defaultValue: [] }
+  )
+
+  const addRecentImage = (url: string) => {
+    setRecentImages((prev = []) => {
+      const newRecent = [url, ...prev.filter((u) => u !== url)].slice(0, 10)
+      return newRecent
+    })
+  }
 
   const latestValueRef = useRef(value)
   latestValueRef.current = value
@@ -80,9 +128,11 @@ export function ImageUpload({
         })
         const data = await res.json()
         if (data.success && 'url' in data) {
-          const newUrls = [...latestValueRef.current, data.url as string]
+          const url = data.url as string
+          const newUrls = [...latestValueRef.current, url]
           latestValueRef.current = newUrls
           onChange?.(newUrls)
+          addRecentImage(url)
           message.success('图片上传成功')
         } else {
           message.error((data as any).error || '图片上传失败')
@@ -146,14 +196,37 @@ export function ImageUpload({
 
   return (
     <div>
-      <Upload
-        accept="image/*"
-        showUploadList={false}
-        beforeUpload={handleUpload}
-        multiple
-      >
-        <Button icon={<UploadOutlined />}>拖入或选择多张图片</Button>
-      </Upload>
+      <div className="flex items-center gap-4">
+        <Upload
+          accept="image/*"
+          showUploadList={false}
+          beforeUpload={handleUpload}
+          multiple
+        >
+          <Button icon={<UploadOutlined />}>拖入/选择图片</Button>
+        </Upload>
+        <RecentImages
+          recentImages={recentImages}
+          currentValue={value}
+          onSelect={(url) => {
+            if (latestValueRef.current.length === 0 && onFirstImageRatio) {
+              const img = new Image()
+              img.onload = () => {
+                const ratio = getClosestAspectRatio(img.width, img.height)
+                onFirstImageRatio(ratio)
+              }
+              img.src = url
+            }
+            const newUrls = [...latestValueRef.current, url]
+            latestValueRef.current = newUrls
+            onChange?.(newUrls)
+            addRecentImage(url)
+          }}
+          onRemove={(url) => {
+            setRecentImages((prev = []) => prev.filter((u) => u !== url))
+          }}
+        />
+      </div>
       {value.length > 0 && (
         <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
           {value.map((url, index) => (

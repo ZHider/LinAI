@@ -86,7 +86,7 @@ export function TemplateFormFields({
     <>
       <div className="flex gap-4">
         <TitleFormItem className="flex-1" />
-        <FolderFormItem className="w-1/3" />
+        <FolderFormItem className="w-1/4" />
       </div>
 
       <div className="flex gap-4">
@@ -102,7 +102,7 @@ export function TemplateFormFields({
             }}
           />
         </Form.Item>
-        <AspectRatioFormItem className="w-1/3" />
+        <AspectRatioFormItem className="w-1/4" />
       </div>
 
       <PromptFormItem
